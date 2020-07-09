@@ -1,0 +1,28 @@
+{
+  "name": "betclic-bet",
+  "version": "0.0.0",
+  "description": "Simple package to bet on betclic",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lenny4/betclic-bet.git"
+  },
+  "keywords": [
+    "bet",
+    "betclic"
+  ],
+  "author": "Alexandre Beaujour",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Lenny4/betclic-bet/issues"
+  },
+  "homepage": "https://github.com/Lenny4/betclic-bet#readme",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "puppeteer": "^5.0.0"
+  }
+}
