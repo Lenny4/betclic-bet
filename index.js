@@ -14,7 +14,7 @@ server.listen(process.env.PORT, () => {
 });
 
 console.log(process.env.HEADLESS === '1');
-puppeteer.launch({headless: process.env.HEADLESS === '1'}).then(async (browser) => {
+puppeteer.launch({headless: process.env.HEADLESS === '1', args: ['--no-sandbox']}).then(async (browser) => {
     const betclicBet = new App(browser);
     console.log('ready');
     app.post('/bets', async (req, res) => {
