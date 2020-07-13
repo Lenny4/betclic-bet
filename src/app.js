@@ -72,24 +72,38 @@ class App {
         }, bet, this.inputBet);
         if (canBet) {
             await page.type(this.inputBet, process.env.AMOUNT_BET);
-            await page.evaluate(async () => {
+            const betIsSuccess = await page.evaluate(async () => {
                 return new Promise((resolve) => {
                     const checkExist = setInterval(() => {
                         const placeBetButton = $('#PlaceBet');
                         if ($(placeBetButton).length === 1 && $(placeBetButton).is(':visible') && $(placeBetButton).is(':not(:disabled)')) {
                             clearInterval(checkExist);
                             $(placeBetButton)[0].click();
-                            resolve(true);
+                            let nbCheckBetPlaced = 0;
+                            const betPlaced = setInterval(() => {
+                                const betAgainButton = $('#bet-again');
+                                if ($(betAgainButton).length === 1 && $(betAgainButton).is(':visible') && $(betAgainButton).is(':not(:disabled)')) {
+                                    clearInterval(betPlaced);
+                                    resolve(true);
+                                } else if (nbCheckBetPlaced >= 50) {
+                                    clearInterval(betPlaced);
+                                    resolve(false);
+                                } else {
+                                    nbCheckBetPlaced++;
+                                }
+                            }, 100);
                         }
                     }, 100);
                 })
             });
+            if (betIsSuccess) {
+                console.log('bet placed', bet);
+            } else {
+                console.log('can\'t place bet', bet);
+            }
             this.bets.splice(0, 1);
-            setTimeout(async () => {
-                await page.goto('about:blank');
-                await page.close();
-                console.log('bet placed ', bet);
-            }, 5000);
+            await page.goto('about:blank');
+            await page.close();
             this.bet();
         } else {
             console.log('can\'t bet on ' + 'https://www.betclic.fr/' + '-m' + bet.matchId);
