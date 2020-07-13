@@ -5,7 +5,9 @@ app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 const server = require('http').createServer(app);
 const puppeteer = require('puppeteer');
+const CronJob = require('cron').CronJob;
 require('log-timestamp');
+const superagent = require('superagent');
 
 const App = require('./src/app');
 
@@ -13,10 +15,22 @@ server.listen(process.env.PORT, () => {
     console.log('Server listening at port %d', process.env.PORT);
 });
 
-console.log(process.env.HEADLESS === '1');
 puppeteer.launch({headless: process.env.HEADLESS === '1', args: ['--no-sandbox']}).then(async (browser) => {
     const betclicBet = new App(browser);
     console.log('ready');
+
+    const job = new CronJob('0 3,8,13,18,23,28,33,38,43,48,53,58 * * * *', function () {
+        superagent.get(process.env.BET_URL)
+            .then(res => {
+                betclicBet.addBets(res.body.matchs);
+            })
+            .catch(err => {
+                console.log('err get matchs', err);
+            });
+    }, null, true, 'UTC');
+    job.start();
+
+    // should be never call
     app.post('/bets', async (req, res) => {
         const matchs = req.body.matchs;
         await betclicBet.addBets(matchs);
