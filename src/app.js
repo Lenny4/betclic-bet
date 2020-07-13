@@ -43,7 +43,7 @@ class App {
         let page = await this.browser.newPage();
         await page.addScriptTag({url: 'https://code.jquery.com/jquery-3.4.1.min.js'});
         await page.goto('https://www.betclic.fr/' + '-m' + bet.matchId);
-        // page = await this.login(page);
+        page = await this.login(page);
         const canBet = await page.evaluate(async (bet, inputBetSelector) => {
             return new Promise((resolve) => {
                 const marketEl = $('#market_marketTypeCode_' + bet.betCode);
