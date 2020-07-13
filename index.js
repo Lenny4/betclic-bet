@@ -14,9 +14,11 @@ server.listen(process.env.PORT, () => {
 
 puppeteer.launch({headless: process.env.HEADLESS === '1'}).then(async (browser) => {
     const betclicBet = new App(browser);
-    betclicBet.login();
-
-    app.get('/test', async (req, res) => {
+    console.log('ready');
+    app.post('/bets', async (req, res) => {
+        console.log(req.body);
+        const matchs = req.body.matchs;
+        await betclicBet.addBets(matchs);
         res.send(true);
     });
 });
