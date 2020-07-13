@@ -19,7 +19,7 @@ puppeteer.launch({headless: process.env.HEADLESS === '1', args: ['--no-sandbox']
     const betclicBet = new App(browser);
     console.log('ready');
 
-    const job = new CronJob('0 3,8,13,18,23,28,33,38,43,48,53,58 * * * *', function () {
+    const job = new CronJob('0 1,6,11,16,21,26,31,36,41,46,51,56 * * * *', () => {
         superagent.get(process.env.BET_URL)
             .then(res => {
                 betclicBet.addBets(res.body.matchs);
