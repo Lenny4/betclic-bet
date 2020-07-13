@@ -3,17 +3,16 @@ class App {
         this.bets = [];
         this.isBetting = false;
         this.browser = browser;
+        this.inputBet = '#bets-container div.betDetails div.wrap-stake-value input.stake-value';
     }
 
     async addBets(matchs) {
         for (let match of matchs) {
             this.bets.push({
                 betCode: match.betCode,
-                betName: match.betName,
                 choiceName: match.choiceName,
                 choiceOdd: match.choiceOdd,
                 matchId: match.matchId,
-                matchName: match.matchName,
             });
         }
         if (!this.isBetting) {
@@ -28,10 +27,63 @@ class App {
             return;
         }
         const bet = this.bets[0];
-        const page = await this.browser.newPage();
+        let page = await this.browser.newPage();
         await page.addScriptTag({url: 'https://code.jquery.com/jquery-3.4.1.min.js'});
-        await page.goto('https://www.betclic.fr/' + bet.matchName + '-m' + bet.matchId);
-        await this.login(page);
+        await page.goto('https://www.betclic.fr/' + '-m' + bet.matchId);
+        page = await this.login(page);
+        const canBet = await page.evaluate(async (bet, inputBetSelector) => {
+            return new Promise((resolve) => {
+                const marketEl = $('#market_marketTypeCode_' + bet.betCode);
+                let oddButton = null;
+                const firstTrTable = $(marketEl).find('table tr:first');
+                if (bet.choiceName === '%1%') {
+                    oddButton = $(firstTrTable).find('td:nth-child(1) .odd-button');
+                } else if (bet.choiceName === '%2%') {
+                    oddButton = $(firstTrTable).find('td:nth-child(3) .odd-button');
+                } else if (bet.choiceName === 'nul') {
+                    oddButton = $(firstTrTable).find('td:nth-child(2) .odd-button');
+                }
+                if (oddButton !== null && $(oddButton).length === 1) {
+                    $(oddButton)[0].click();
+                    const checkExist = setInterval(() => {
+                        const inputBet = $(inputBetSelector);
+                        if ($(inputBet).length === 1 && $(inputBet).is(':visible')) {
+                            clearInterval(checkExist);
+                            resolve(oddButton !== null);
+                        }
+                    }, 100);
+                } else {
+                    resolve(false);
+                }
+            });
+        }, bet, this.inputBet);
+        if (canBet) {
+            await page.type(this.inputBet, process.env.AMOUNT_BET);
+            await page.evaluate(async () => {
+                return new Promise((resolve) => {
+                    const checkExist = setInterval(() => {
+                        const placeBetButton = $('#PlaceBet');
+                        if ($(placeBetButton).length === 1 && $(placeBetButton).is(':visible') && $(placeBetButton).is(':not(:disabled)')) {
+                            clearInterval(checkExist);
+                            $(placeBetButton)[0].click();
+                            resolve(true);
+                        }
+                    }, 100);
+                })
+            });
+            this.bets.splice(0, 1);
+            setTimeout(async () => {
+                await page.goto('about:blank');
+                await page.close();
+            }, 5000);
+            this.bet();
+        } else {
+            console.log('can\'t bet on ' + 'https://www.betclic.fr/' + '-m' + bet.matchId);
+            this.bets.splice(0, 1);
+            await page.goto('about:blank');
+            await page.close();
+            this.bet();
+        }
     }
 
     async login(page = null) {
@@ -41,7 +93,7 @@ class App {
             await page.goto('https://www.betclic.fr/');
         }
         if (await this.isLogin(page, false)) {
-            return true;
+            return page;
         }
         await page.evaluate(async (username, password, date, month, year) => {
                 $('#login-username').val(username);
@@ -49,7 +101,7 @@ class App {
                 $('#login-submit')[0].click();
                 const checkExist = setInterval(() => {
                     const formEl = $('#RecapForm');
-                    if ($(formEl).length === 1 && $(formEl).is(":visible")) {
+                    if ($(formEl).length === 1 && $(formEl).is(':visible')) {
                         clearInterval(checkExist);
                         $(formEl).find('#CustBirthDate_Day').val(date);
                         $(formEl).find('#CustBirthDate_Month').val(month);
@@ -65,9 +117,7 @@ class App {
             process.env.LOGIN_YEAR,
         );
         await page.waitForNavigation();
-        await page.goto('about:blank');
-        await page.close();
-        return true;
+        return page;
     }
 
     /**
@@ -77,11 +127,11 @@ class App {
      */
     async isLogin(page, reloadPage = true) {
         if (reloadPage) {
-            await page.reload({waitUntil: ["networkidle0", "domcontentloaded"]});
+            await page.reload({waitUntil: ['networkidle0', 'domcontentloaded']});
         }
         return await page.evaluate(() => {
             const formEl = $('#loginForm');
-            return !($(formEl).length === 1 && $(formEl).is(":visible"));
+            return !($(formEl).length === 1 && $(formEl).is(':visible'));
         });
     }
 }
