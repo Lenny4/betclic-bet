@@ -99,6 +99,7 @@ class App {
             if (betIsSuccess) {
                 console.log('bet placed', bet);
             } else {
+                await page.screenshot({path: bet.matchId + '.png'});
                 console.log('can\'t place bet', bet);
             }
             this.bets.splice(0, 1);
