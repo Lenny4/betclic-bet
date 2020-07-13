@@ -13,6 +13,7 @@ server.listen(process.env.PORT, () => {
     console.log('Server listening at port %d', process.env.PORT);
 });
 
+console.log(process.env.HEADLESS === '1');
 puppeteer.launch({headless: process.env.HEADLESS === '1'}).then(async (browser) => {
     const betclicBet = new App(browser);
     console.log('ready');

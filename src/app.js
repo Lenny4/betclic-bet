@@ -107,8 +107,10 @@ class App {
             await page.goto('https://www.betclic.fr/');
         }
         if (await this.isLogin(page, false)) {
+            console.log('already logging');
             return page;
         }
+        console.log('is logging ...');
         await page.evaluate(async (username, password, date, month, year) => {
                 $('#login-username').val(username);
                 $('#login-password').val(password);
