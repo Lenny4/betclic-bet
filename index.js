@@ -5,6 +5,7 @@ app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 const server = require('http').createServer(app);
 const puppeteer = require('puppeteer');
+require('log-timestamp');
 
 const App = require('./src/app');
 
@@ -16,7 +17,6 @@ puppeteer.launch({headless: process.env.HEADLESS === '1'}).then(async (browser) 
     const betclicBet = new App(browser);
     console.log('ready');
     app.post('/bets', async (req, res) => {
-        console.log(req.body);
         const matchs = req.body.matchs;
         await betclicBet.addBets(matchs);
         res.send(true);

@@ -1,20 +1,32 @@
 class App {
     constructor(browser) {
         this.bets = [];
+        this.doublons = [];
         this.isBetting = false;
         this.browser = browser;
         this.inputBet = '#bets-container div.betDetails div.wrap-stake-value input.stake-value';
     }
 
     async addBets(matchs) {
+        const now = Math.round(new Date().getTime() / 1000);
         for (let match of matchs) {
-            this.bets.push({
+            const doublon = this.doublons.find(x => x.matchId === match.matchId);
+            const bet = {
                 betCode: match.betCode,
                 choiceName: match.choiceName,
                 choiceOdd: match.choiceOdd,
                 matchId: match.matchId,
-            });
+                time: now,
+            };
+            if (typeof doublon === 'undefined') {
+                console.log('ajout du bet ', bet);
+                this.bets.push(bet);
+                this.doublons.push(bet);
+            } else {
+                console.log('doublon du bet ', bet);
+            }
         }
+        this.doublons = this.doublons.filter(x => x.time >= (now - 3600));
         if (!this.isBetting) {
             this.bet();
         }
@@ -27,10 +39,11 @@ class App {
             return;
         }
         const bet = this.bets[0];
+        console.log('is betting on ', bet);
         let page = await this.browser.newPage();
         await page.addScriptTag({url: 'https://code.jquery.com/jquery-3.4.1.min.js'});
         await page.goto('https://www.betclic.fr/' + '-m' + bet.matchId);
-        page = await this.login(page);
+        // page = await this.login(page);
         const canBet = await page.evaluate(async (bet, inputBetSelector) => {
             return new Promise((resolve) => {
                 const marketEl = $('#market_marketTypeCode_' + bet.betCode);
@@ -75,6 +88,7 @@ class App {
             setTimeout(async () => {
                 await page.goto('about:blank');
                 await page.close();
+                console.log('bet placed ', bet);
             }, 5000);
             this.bet();
         } else {
