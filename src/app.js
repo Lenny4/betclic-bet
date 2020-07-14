@@ -13,10 +13,13 @@ class App {
             const doublon = this.doublons.find(x => x.matchId === match.matchId);
             const bet = {
                 betCode: match.betCode,
+                matchName: match.matchName,
+                guadeloupeDate: match.guadeloupeDate,
                 choiceName: match.choiceName,
                 choiceOdd: match.choiceOdd,
                 matchId: match.matchId,
                 time: now,
+                try: 0,
             };
             if (typeof doublon === 'undefined') {
                 console.log('ajout du bet ', bet);
@@ -38,6 +41,7 @@ class App {
             this.isBetting = false;
             return;
         }
+        const now = Math.round(new Date().getTime() / 1000);
         const bet = this.bets[0];
         console.log('is betting on ', bet);
         let page = await this.browser.newPage();
@@ -98,11 +102,19 @@ class App {
             });
             if (betIsSuccess) {
                 console.log('bet placed', bet);
+                this.bets.splice(0, 1);
             } else {
-                await page.screenshot({path: bet.matchId + '.png'});
+                await page.screenshot({path: bet.matchId + '-' + now + '.png'});
                 console.log('can\'t place bet', bet);
+                bet.try = bet.try + 1;
+                if (bet.try <= process.env.RETRY_ERROR_BET) {
+                    console.log('wait 5s and bet again ... ');
+                    await this.timeout(5000);
+                } else {
+                    console.log('max try for bet ', bet);
+                    this.bets.splice(0, 1);
+                }
             }
-            this.bets.splice(0, 1);
             await page.goto('about:blank');
             await page.close();
             this.bet();
@@ -164,6 +176,14 @@ class App {
             const formEl = $('#loginForm');
             return !($(formEl).length === 1 && $(formEl).is(':visible'));
         });
+    }
+
+    async timeout(time) {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, time);
+        })
     }
 }
 
