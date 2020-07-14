@@ -115,16 +115,29 @@ class App {
                     this.bets.splice(0, 1);
                 }
             }
+            await this.clearPanier(page);
             await page.goto('about:blank');
             await page.close();
             this.bet();
         } else {
             console.log('can\'t bet on ' + 'https://www.betclic.fr/' + '-m' + bet.matchId);
+            await this.clearPanier(page);
             this.bets.splice(0, 1);
             await page.goto('about:blank');
             await page.close();
             this.bet();
         }
+    }
+
+    async clearPanier(page) {
+        return await page.evaluate(async () => {
+            return new Promise((resolve) => {
+                $('#bs-empty-all')[0].click();
+                setTimeout(() => {
+                    resolve(true);
+                }, 5000);
+            });
+        });
     }
 
     async login(page = null) {
