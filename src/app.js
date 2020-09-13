@@ -1,3 +1,5 @@
+const clone = require('clone');
+
 class App {
     constructor(browser) {
         this.bets = [];
@@ -104,29 +106,31 @@ class App {
                 console.log('bet placed', bet);
                 this.bets.splice(0, 1);
             } else {
-                await page.screenshot({path: bet.matchId + '-' + now + '.png'});
                 console.log('can\'t place bet', bet);
-                bet.try = bet.try + 1;
-                if (bet.try <= process.env.RETRY_ERROR_BET) {
-                    console.log('wait 5s and bet again ... ');
-                    await this.timeout(5000);
-                } else {
-                    console.log('max try for bet ', bet);
-                    this.bets.splice(0, 1);
-                }
+                await this.addTryBet(page, bet, 'betIsSuccess', now);
             }
-            await this.clearPanier(page);
-            await page.goto('about:blank');
-            await page.close();
-            this.bet();
         } else {
             console.log('can\'t bet on ' + 'https://www.betclic.fr/' + '-m' + bet.matchId);
-            await this.clearPanier(page);
-            this.bets.splice(0, 1);
-            await page.goto('about:blank');
-            await page.close();
-            this.bet();
+            await this.addTryBet(page, bet, 'canBet', now);
         }
+        await this.clearPanier(page);
+        await page.goto('about:blank');
+        await page.close();
+        this.bet();
+    }
+
+    async addTryBet(page, bet, conditionName, now) {
+        await page.screenshot({path: bet.matchId + '-' + conditionName + '-' + now + '.png'});
+        bet.try = bet.try + 1;
+        if (bet.try <= process.env.RETRY_ERROR_BET) {
+            console.log('wait ' + Math.trunc(process.env.RETRY_ERROR_BET / 1000) + 's and bet again ... ');
+            const cloneBet = clone(bet);
+            this.bets.push(cloneBet);
+            await this.timeout(process.env.RETRY_ERROR_BET);
+        } else {
+            console.log('max try for bet ', bet);
+        }
+        this.bets.splice(0, 1);
     }
 
     async clearPanier(page) {
