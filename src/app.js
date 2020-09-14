@@ -120,7 +120,10 @@ class App {
     }
 
     async addTryBet(page, bet, conditionName, now) {
-        await page.screenshot({path: bet.matchId + '-' + conditionName + '-' + now + '.png'});
+        await page.screenshot({
+            path: 'images/' + bet.matchId + '-' + conditionName + '-' + now + '.png',
+            fullPage: true
+        });
         bet.try = bet.try + 1;
         if (bet.try <= process.env.RETRY_ERROR_BET) {
             console.log('wait ' + Math.trunc(process.env.RETRY_ERROR_BET / 1000) + 's and bet again ... ');
