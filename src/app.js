@@ -20,6 +20,7 @@ class App {
                 choiceName: match.choiceName,
                 choiceOdd: match.choiceOdd,
                 matchId: match.matchId,
+                maxOdd: match.maxOdd,
                 time: now,
                 try: 0,
             };
@@ -63,20 +64,41 @@ class App {
                     oddButton = $(firstTrTable).find('td:nth-child(2) .odd-button');
                 }
                 if (oddButton !== null && $(oddButton).length === 1) {
-                    $(oddButton)[0].click();
-                    const checkExist = setInterval(() => {
-                        const inputBet = $(inputBetSelector);
-                        if ($(inputBet).length === 1 && $(inputBet).is(':visible')) {
-                            clearInterval(checkExist);
-                            resolve(oddButton !== null);
+                    const oddValue = parseFloat(($(oddButton).html()).replace(',', '.'));
+                    if (!isNaN(oddValue)) {
+                        if (oddValue < bet.maxOdd) {
+                            $(oddButton)[0].click();
+                            const checkExist = setInterval(() => {
+                                const inputBet = $(inputBetSelector);
+                                if ($(inputBet).length === 1 && $(inputBet).is(':visible')) {
+                                    clearInterval(checkExist);
+                                    resolve({
+                                        message: null,
+                                        result: true
+                                    });
+                                }
+                            }, 100);
+                        } else {
+                            resolve({
+                                message: 'Error : oddValue ' + oddValue + ' maxOdd ' + bet.maxOdd,
+                                result: false
+                            });
                         }
-                    }, 100);
+                    } else {
+                        resolve({
+                            message: 'Error : oddValue is not a number',
+                            result: false
+                        });
+                    }
                 } else {
-                    resolve(false);
+                    resolve({
+                        message: 'Error : cant find bet button',
+                        result: false
+                    });
                 }
             });
         }, bet, this.inputBet);
-        if (canBet) {
+        if (canBet.result) {
             await page.type(this.inputBet, process.env.AMOUNT_BET);
             const betIsSuccess = await page.evaluate(async () => {
                 return new Promise((resolve) => {
@@ -106,11 +128,12 @@ class App {
                 console.log('bet placed', bet);
                 this.bets.splice(0, 1);
             } else {
-                console.log('can\'t place bet', bet);
+                console.log('cant place bet', bet);
                 await this.addTryBet(page, bet, 'betIsSuccess', now);
             }
         } else {
-            console.log('can\'t bet on ' + 'https://www.betclic.fr/' + '-m' + bet.matchId);
+            console.log('cant bet on ' + 'https://www.betclic.fr/' + '-m' + bet.matchId);
+            console.log(canBet.message);
             await this.addTryBet(page, bet, 'canBet', now);
         }
         await this.clearPanier(page);
