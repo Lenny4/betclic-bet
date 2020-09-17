@@ -191,6 +191,7 @@ class App {
             await page.addScriptTag({url: 'https://code.jquery.com/jquery-3.4.1.min.js'});
             await page.goto('https://www.betclic.fr/');
         }
+        const pageUrl = page.url();
         if (await this.isLogin(page, false)) {
             console.log('already logging');
             return page;
@@ -218,7 +219,12 @@ class App {
             process.env.LOGIN_YEAR,
         );
         console.log('logged waiting for page to reload ...');
-        await page.waitForNavigation();
+        try {
+            await page.goto(pageUrl);
+        } catch (e) {
+            await page.waitForNavigation();
+            await page.goto(pageUrl);
+        }
         console.log('logging done');
         return page;
     }
