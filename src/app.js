@@ -113,6 +113,7 @@ class App {
             });
         }, bet, this.inputBet);
         if (canBet.result) {
+            console.log('canBet is true')
             await page.type(this.inputBet, process.env.AMOUNT_BET);
             const betIsSuccess = await page.evaluate(async () => {
                 return new Promise((resolve) => {
