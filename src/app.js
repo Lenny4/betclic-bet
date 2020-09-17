@@ -54,45 +54,59 @@ class App {
         const canBet = await page.evaluate(async (bet, inputBetSelector) => {
             return new Promise((resolve) => {
                 const marketEl = $('#market_marketTypeCode_' + bet.betCode);
-                let oddButton = null;
-                const firstTrTable = $(marketEl).find('table tr:first');
-                if (bet.choiceName === '%1%') {
-                    oddButton = $(firstTrTable).find('td:nth-child(1) .odd-button');
-                } else if (bet.choiceName === '%2%') {
-                    oddButton = $(firstTrTable).find('td:nth-child(3) .odd-button');
-                } else if (bet.choiceName === 'nul') {
-                    oddButton = $(firstTrTable).find('td:nth-child(2) .odd-button');
-                }
-                if (oddButton !== null && $(oddButton).length === 1) {
-                    const oddValue = parseFloat(($(oddButton).html()).replace(',', '.'));
-                    if (!isNaN(oddValue)) {
-                        if (oddValue < bet.maxOdd) {
-                            $(oddButton)[0].click();
-                            const checkExist = setInterval(() => {
-                                const inputBet = $(inputBetSelector);
-                                if ($(inputBet).length === 1 && $(inputBet).is(':visible')) {
-                                    clearInterval(checkExist);
+                if ($(marketEl).length === 1) {
+                    let oddButton = null;
+                    const firstTrTable = $(marketEl).find('table tr:first');
+                    if ($(firstTrTable).length === 1) {
+                        if (bet.choiceName === '%1%') {
+                            oddButton = $(firstTrTable).find('td:nth-child(1) .odd-button');
+                        } else if (bet.choiceName === '%2%') {
+                            oddButton = $(firstTrTable).find('td:nth-child(3) .odd-button');
+                        } else if (bet.choiceName === 'nul') {
+                            oddButton = $(firstTrTable).find('td:nth-child(2) .odd-button');
+                        }
+                        if (oddButton !== null && $(oddButton).length === 1) {
+                            const oddValue = parseFloat(($(oddButton).html()).replace(',', '.'));
+                            if (!isNaN(oddValue)) {
+                                if (oddValue < bet.maxOdd) {
+                                    $(oddButton)[0].click();
+                                    const checkExist = setInterval(() => {
+                                        const inputBet = $(inputBetSelector);
+                                        if ($(inputBet).length === 1 && $(inputBet).is(':visible')) {
+                                            clearInterval(checkExist);
+                                            resolve({
+                                                message: null,
+                                                result: true
+                                            });
+                                        }
+                                    }, 100);
+                                } else {
                                     resolve({
-                                        message: null,
-                                        result: true
+                                        message: 'Error : oddValue ' + oddValue + ' maxOdd ' + bet.maxOdd,
+                                        result: false
                                     });
                                 }
-                            }, 100);
+                            } else {
+                                resolve({
+                                    message: 'Error : oddValue is not a number',
+                                    result: false
+                                });
+                            }
                         } else {
                             resolve({
-                                message: 'Error : oddValue ' + oddValue + ' maxOdd ' + bet.maxOdd,
+                                message: 'Error : cant find bet button ' + bet.choiceName + ' html-> ' + $(marketEl).html(),
                                 result: false
                             });
                         }
                     } else {
                         resolve({
-                            message: 'Error : oddValue is not a number',
+                            message: 'Error : cant find firstTrTable ' + bet.choiceName + ' html-> ' + $(marketEl).html(),
                             result: false
                         });
                     }
                 } else {
                     resolve({
-                        message: 'Error : cant find bet button',
+                        message: 'Error : cant find marketEl ' + bet.choiceName + ' html-> ' + $(document).find('body').html(),
                         result: false
                     });
                 }
@@ -202,7 +216,9 @@ class App {
             process.env.LOGIN_MONTH,
             process.env.LOGIN_YEAR,
         );
+        console.log('logged waiting for page to reload ...');
         await page.waitForNavigation();
+        console.log('logging done');
         return page;
     }
 
