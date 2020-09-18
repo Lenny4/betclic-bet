@@ -48,9 +48,14 @@ class App {
         const bet = this.bets[0];
         console.log('is betting on ', bet);
         let page = await this.browser.newPage();
+        console.log('page created for bet');
         await page.addScriptTag({url: 'https://code.jquery.com/jquery-3.4.1.min.js'});
-        await page.goto('https://www.betclic.fr/' + '-m' + bet.matchId);
+        const url = 'https://www.betclic.fr/' + '-m' + bet.matchId;
+        console.log('page going to ' + url);
+        await page.goto(url);
+        console.log('page before login');
         page = await this.login(page);
+        console.log('start canBet');
         const canBet = await page.evaluate(async (bet, inputBetSelector) => {
             return new Promise((resolve) => {
                 const marketEl = $('#market_marketTypeCode_' + bet.betCode);
@@ -113,7 +118,7 @@ class App {
             });
         }, bet, this.inputBet);
         if (canBet.result) {
-            console.log('canBet is true')
+            console.log('canBet is true');
             await page.type(this.inputBet, process.env.AMOUNT_BET);
             const betIsSuccess = await page.evaluate(async () => {
                 return new Promise((resolve) => {
