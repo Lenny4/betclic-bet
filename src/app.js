@@ -63,12 +63,17 @@ class App {
                     let oddButton = null;
                     const firstTrTable = $(marketEl).find('table tr:first');
                     if ($(firstTrTable).length === 1) {
-                        if (bet.choiceName === '%1%') {
+                        if (bet.choiceName.toLowerCase() === '%1%') {
                             oddButton = $(firstTrTable).find('td:nth-child(1) .odd-button');
-                        } else if (bet.choiceName === '%2%') {
+                        } else if (bet.choiceName.toLowerCase() === '%2%') {
                             oddButton = $(firstTrTable).find('td:nth-child(3) .odd-button');
-                        } else if (bet.choiceName === 'nul') {
+                        } else if (bet.choiceName.toLowerCase() === 'nul') {
                             oddButton = $(firstTrTable).find('td:nth-child(2) .odd-button');
+                        } else {
+                            resolve({
+                                message: 'Error : no bet.choiceName defined for ' + bet.choiceName,
+                                result: false
+                            });
                         }
                         if (oddButton !== null && $(oddButton).length === 1) {
                             const oddValue = parseFloat(($(oddButton).html()).replace(',', '.'));
@@ -196,26 +201,28 @@ class App {
             await page.addScriptTag({url: 'https://code.jquery.com/jquery-3.4.1.min.js'});
             await page.goto('https://www.betclic.fr/');
         }
-        const pageUrl = page.url();
         if (await this.isLogin(page, false)) {
             console.log('already logging');
             return page;
         }
-        console.log('is logging ...');
+        const navigationPromise = page.waitForNavigation();
         await page.evaluate(async (username, password, date, month, year) => {
-                $('#login-username').val(username);
-                $('#login-password').val(password);
-                $('#login-submit')[0].click();
-                const checkExist = setInterval(() => {
-                    const formEl = $('#RecapForm');
-                    if ($(formEl).length === 1 && $(formEl).is(':visible')) {
-                        clearInterval(checkExist);
-                        $(formEl).find('#CustBirthDate_Day').val(date);
-                        $(formEl).find('#CustBirthDate_Month').val(month);
-                        $(formEl).find('#CustBirthDate_Year').val(year);
-                        $(formEl).find('#submitRecap')[0].click();
-                    }
-                }, 100);
+                return new Promise((resolve) => {
+                    $('#login-username').val(username);
+                    $('#login-password').val(password);
+                    $('#login-submit')[0].click();
+                    const checkExist = setInterval(() => {
+                        const formEl = $('#RecapForm');
+                        if ($(formEl).length === 1 && $(formEl).is(':visible')) {
+                            clearInterval(checkExist);
+                            $(formEl).find('#CustBirthDate_Day').val(date);
+                            $(formEl).find('#CustBirthDate_Month').val(month);
+                            $(formEl).find('#CustBirthDate_Year').val(year);
+                            $(formEl).find('#submitRecap')[0].click();
+                            resolve(true);
+                        }
+                    }, 100);
+                });
             },
             process.env.LOGIN_USERNAME,
             process.env.LOGIN_PASSWORD,
@@ -224,12 +231,7 @@ class App {
             process.env.LOGIN_YEAR,
         );
         console.log('logged waiting for page to reload ...');
-        try {
-            await page.goto(pageUrl);
-        } catch (e) {
-            await page.waitForNavigation();
-            await page.goto(pageUrl);
-        }
+        await navigationPromise;
         console.log('logging done');
         return page;
     }
