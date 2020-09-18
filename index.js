@@ -23,7 +23,9 @@ puppeteer.launch({headless: process.env.HEADLESS === '1', args: ['--no-sandbox']
     const job = new CronJob('0 1,6,11,16,21,26,31,36,41,46,51,56 * * * *', () => {
         superagent.get(process.env.BET_URL)
             .then(res => {
-                console.log(res.body);
+                if (Array.isArray(res.body.matchs) && res.body.matchs.length > 0) {
+                    console.log(res.body);
+                }
                 betclicBet.addBets(res.body.matchs);
             })
             .catch(err => {
