@@ -205,6 +205,7 @@ class App {
             console.log('already logging');
             return page;
         }
+        const pageUrl = page.url();
         const navigationPromise = page.waitForNavigation();
         await page.evaluate(async (username, password, date, month, year) => {
                 return new Promise((resolve) => {
@@ -230,10 +231,17 @@ class App {
             process.env.LOGIN_MONTH,
             process.env.LOGIN_YEAR,
         );
-        console.log('logged waiting for page to reload ...');
+        console.log('reload page after login ...');
+        await page.goto(pageUrl);
+        console.log('wait navigationPromise ...');
         await navigationPromise;
-        console.log('logging done');
-        return page;
+        if (await this.isLogin(page, false)) {
+            console.log('logging done');
+            return page;
+        } else {
+            console.log('couldnt loggin, try again ...');
+            return await this.login(page);
+        }
     }
 
     /**
