@@ -196,6 +196,7 @@ class App {
     }
 
     async login(page = null) {
+        const now = Math.round(new Date().getTime() / 1000);
         if (page === null) {
             page = await this.browser.newPage();
             await page.addScriptTag({url: 'https://code.jquery.com/jquery-3.4.1.min.js'});
@@ -206,7 +207,6 @@ class App {
             return page;
         }
         const pageUrl = page.url();
-        const navigationPromise = page.waitForNavigation();
         await page.evaluate(async (username, password, date, month, year) => {
                 return new Promise((resolve) => {
                     $('#login-username').val(username);
@@ -233,12 +233,15 @@ class App {
         );
         console.log('reload page after login ...');
         await page.goto(pageUrl);
-        console.log('wait navigationPromise ...');
-        await navigationPromise;
+        console.log('page logging reloaded !');
         if (await this.isLogin(page, false)) {
             console.log('logging done');
             return page;
         } else {
+            await page.screenshot({
+                path: 'images/login-' + now + '.png',
+                fullPage: true
+            });
             console.log('couldnt loggin, try again ...');
             return await this.login(page);
         }
