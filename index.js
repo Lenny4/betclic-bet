@@ -18,7 +18,7 @@ server.listen(process.env.PORT, () => {
 // https://stackoverflow.com/questions/53681161/why-puppeteer-needs-no-sandbox-to-launch-chrome-in-cloud-functions
 puppeteer.launch({
     headless: process.env.HEADLESS === '1',
-    args: ['--no-sandbox', '--proxy-server="socks5://127.0.0.1:9050"']
+    args: ['--no-sandbox', '--proxy-server=socks5://127.0.0.1:9050']
 }).then(async (browser) => {
     const betclicBet = new App(browser);
     console.log('ready');
