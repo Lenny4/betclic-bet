@@ -250,13 +250,8 @@ class App {
             await page.goto('about:blank');
             console.log('close page');
             await page.close();
-            console.log('try again new page')
-            page = await this.browser.newPage();
-            console.log('add jquery script');
-            await page.addScriptTag({url: 'https://code.jquery.com/jquery-3.4.1.min.js'});
-            console.log('(2)page going to ' + url);
-            await page.goto(pageUrl);
-            return await this.login(page);
+            console.log('try logging again after error');
+            return await this.login();
         }
         console.log('page logging reloaded !');
         if (await this.isLogin(page, false)) {
