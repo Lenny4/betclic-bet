@@ -207,32 +207,57 @@ class App {
             return page;
         }
         const pageUrl = page.url();
-        await page.evaluate(async (username, password, date, month, year) => {
-                return new Promise((resolve) => {
-                    $('#login-username').val(username);
-                    $('#login-password').val(password);
-                    $('#login-submit')[0].click();
-                    const checkExist = setInterval(() => {
-                        const formEl = $('#RecapForm');
-                        if ($(formEl).length === 1 && $(formEl).is(':visible')) {
-                            clearInterval(checkExist);
-                            $(formEl).find('#CustBirthDate_Day').val(date);
-                            $(formEl).find('#CustBirthDate_Month').val(month);
-                            $(formEl).find('#CustBirthDate_Year').val(year);
-                            $(formEl).find('#submitRecap')[0].click();
-                            resolve(true);
-                        }
-                    }, 100);
+        try {
+            await page.evaluate(async (username, password, date, month, year) => {
+                    return new Promise((resolve) => {
+                        $('#login-username').val(username);
+                        $('#login-password').val(password);
+                        $('#login-submit')[0].click();
+                        const checkExist = setInterval(() => {
+                            const formEl = $('#RecapForm');
+                            if ($(formEl).length === 1 && $(formEl).is(':visible')) {
+                                clearInterval(checkExist);
+                                $(formEl).find('#CustBirthDate_Day').val(date);
+                                $(formEl).find('#CustBirthDate_Month').val(month);
+                                $(formEl).find('#CustBirthDate_Year').val(year);
+                                $(formEl).find('#submitRecap')[0].click();
+                                resolve(true);
+                            }
+                        }, 100);
+                    });
+                },
+                process.env.LOGIN_USERNAME,
+                process.env.LOGIN_PASSWORD,
+                process.env.LOGIN_DAY,
+                process.env.LOGIN_MONTH,
+                process.env.LOGIN_YEAR,
+            );
+            console.log('reload page after login ...');
+            await page.goto(pageUrl);
+        } catch (e) {
+            console.log('could not connect ...');
+            console.log(e);
+            try {
+                await page.screenshot({
+                    path: 'images/login-2-' + now + '.png',
+                    fullPage: true
                 });
-            },
-            process.env.LOGIN_USERNAME,
-            process.env.LOGIN_PASSWORD,
-            process.env.LOGIN_DAY,
-            process.env.LOGIN_MONTH,
-            process.env.LOGIN_YEAR,
-        );
-        console.log('reload page after login ...');
-        await page.goto(pageUrl);
+            } catch (e) {
+                console.log('could not take screenshot');
+                console.log(e);
+            }
+            console.log('go to about blank');
+            await page.goto('about:blank');
+            console.log('close page');
+            await page.close();
+            console.log('try again new page')
+            page = await this.browser.newPage();
+            console.log('add jquery script');
+            await page.addScriptTag({url: 'https://code.jquery.com/jquery-3.4.1.min.js'});
+            console.log('(2)page going to ' + url);
+            await page.goto(pageUrl);
+            return await this.login(page);
+        }
         console.log('page logging reloaded !');
         if (await this.isLogin(page, false)) {
             console.log('logging done');
