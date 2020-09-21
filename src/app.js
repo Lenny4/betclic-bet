@@ -49,7 +49,7 @@ class App {
         console.log('is betting on ', bet);
         let page = await this.browser.newPage();
         console.log('page created for bet');
-        await page.addScriptTag({url: 'https://code.jquery.com/jquery-3.4.1.min.js'});
+        await page.addScriptTag({path: 'lib/jquery-3.4.1.min.js'});
         const url = 'https://www.betclic.fr/' + '-m' + bet.matchId;
         console.log('page going to ' + url);
         await page.goto(url);
@@ -199,7 +199,7 @@ class App {
         const now = Math.round(new Date().getTime() / 1000);
         if (page === null) {
             page = await this.browser.newPage();
-            await page.addScriptTag({url: 'https://code.jquery.com/jquery-3.4.1.min.js'});
+            await page.addScriptTag({path: 'lib/jquery-3.4.1.min.js'});
             await page.goto('https://www.betclic.fr/');
         }
         if (await this.isLogin(page, false)) {
