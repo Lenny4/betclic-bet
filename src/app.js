@@ -199,8 +199,8 @@ class App {
         const now = Math.round(new Date().getTime() / 1000);
         if (page === null) {
             page = await this.browser.newPage();
-            await page.addScriptTag({path: 'lib/jquery-3.4.1.min.js'});
             await page.goto('https://www.betclic.fr/');
+            await page.addScriptTag({path: 'lib/jquery-3.4.1.min.js'});
         }
         if (await this.isLogin(page, false)) {
             console.log('already logging');
