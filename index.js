@@ -18,7 +18,17 @@ server.listen(process.env.PORT, () => {
 // https://stackoverflow.com/questions/53681161/why-puppeteer-needs-no-sandbox-to-launch-chrome-in-cloud-functions
 puppeteer.launch({
     headless: process.env.HEADLESS === '1',
-    args: ['--no-sandbox']
+    ignoreHTTPSErrors: true,
+    userDataDir: './tmp',
+    args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-infobars',
+        '--window-position=0,0',
+        '--ignore-certifcate-errors',
+        '--ignore-certifcate-errors-spki-list',
+        '--user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3312.0 Safari/537.36"'
+    ]
 }).then(async (browser) => {
     const betclicBet = new App(browser);
     console.log('ready');
@@ -34,11 +44,4 @@ puppeteer.launch({
             });
     }, null, true, 'UTC');
     job.start();
-
-    // should be never call
-    app.post('/bets', async (req, res) => {
-        const matchs = req.body.matchs;
-        await betclicBet.addBets(matchs);
-        res.send(true);
-    });
 });
