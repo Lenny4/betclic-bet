@@ -49,68 +49,76 @@ class App {
         const bet = this.bets[0];
         console.log('is betting on ', bet);
         let page = await this.browser.newPage();
-        try {
-            console.log('start try, page created for bet');
-            const url = 'https://www.betclic.fr/' + '-m' + bet.matchId;
-            console.log('page going to ' + url);
-            await page.goto(url);
-            await page.addScriptTag({path: 'lib/jquery-3.4.1.min.js'});
-            console.log('page before login');
-            page = await this.login(page);
-            console.log('start canBet');
-            let r = true;
-            if (page.url().includes(bet.matchId)) {
-                await this.clearPanier(page);
-                let buttonSelector = 'app-match > div > app-match-markets > app-market:nth-child(1) > div > div.ng-star-inserted > div > div > ';
-                if (bet.choiceName.toLowerCase() === '%1%') {
-                    buttonSelector = 'div:nth-child(1) > app-selection';
-                } else if (bet.choiceName.toLowerCase() === '%2%') {
-                    buttonSelector = 'div:nth-child(3) > app-selection';
-                } else if (bet.choiceName.toLowerCase() === 'nul') {
-                    buttonSelector = 'div:nth-child(2) > app-selection';
-                } else {
-                    r = false;
-                    console.log('Error : no bet.choiceName defined for ' + bet.choiceName);
-                }
-                if (r) {
-                    console.log('click on odd ...');
-                    await page.click(buttonSelector);
-                    await this.timeout(500);
-                    console.log('enter amount ...');
-                    await page.type('app-betting-slip-single-bet-item-footer > div > div > app-bs-stake > div > input', process.env.AMOUNT_BET);
-                    await this.timeout(500);
-                    if (await page.$('bc-gb-cookie-banner > div > div > button') !== null) {
-                        console.log('click remove cookie ...');
-                        await page.click('bc-gb-cookie-banner > div > div > button');
-                        await this.timeout(500);
-                    }
-                    console.log('click Parier ...');
-                    await page.click('#betBtn');
-                }
-            } else {
-                console.log(bet.matchName + ' is not available on betclic : ' + page.url());
-            }
-            this.bets.splice(0, 1);
+        console.log('start try, page created for bet');
+        const url = 'https://www.betclic.fr/' + '-m' + bet.matchId;
+        console.log('page going to ' + url);
+        await page.goto(url);
+        await page.addScriptTag({path: 'lib/jquery-3.4.1.min.js'});
+        console.log('page before login');
+        page = await this.login(page);
+        console.log('start canBet');
+        let r = true;
+        if (page.url().includes(bet.matchId)) {
             await this.clearPanier(page);
-            await this.timeout(2000);
-        } catch (e) {
-            console.log('==============================================================================');
-            console.log(e);
-            console.log('==============================================================================');
+            let buttonSelector = 'app-match > div > app-match-markets > app-market:nth-child(1) > div > div.ng-star-inserted > div > div > ';
+            if (bet.choiceName.toLowerCase() === '%1%') {
+                buttonSelector = 'div:nth-child(1) > app-selection';
+            } else if (bet.choiceName.toLowerCase() === '%2%') {
+                buttonSelector = 'div:nth-child(3) > app-selection';
+            } else if (bet.choiceName.toLowerCase() === 'nul') {
+                buttonSelector = 'div:nth-child(2) > app-selection';
+            } else {
+                r = false;
+                console.log('Error : no bet.choiceName defined for ' + bet.choiceName);
+            }
+            if (r) {
+                console.log('click on odd ...');
+                await page.click(buttonSelector);
+                await this.timeout(500);
+                console.log('enter amount ...');
+                await page.type('app-betting-slip-single-bet-item-footer > div > div > app-bs-stake > div > input', process.env.AMOUNT_BET);
+                await this.timeout(500);
+                if (await page.$('bc-gb-cookie-banner > div > div > button') !== null) {
+                    console.log('click remove cookie ...');
+                    await page.click('bc-gb-cookie-banner > div > div > button');
+                    await this.timeout(500);
+                }
+                console.log('click Parier ...');
+                await page.click('#betBtn');
+            }
+        } else {
+            console.log(bet.matchName + ' is not available on betclic : ' + page.url());
         }
+        this.bets.splice(0, 1);
+        await this.timeout(2000);
+        await this.clearPanier(page);
+        await this.timeout(2000);
+
         await page.goto('about:blank');
         await page.close();
         this.bet();
     }
 
     async clearPanier(page) {
-        if (await page.$('app-betting-slip > div > div > div.bettingslip_headerDelete.ng-star-inserted > div > button > span:visible') !== null) {
-            await page.click('app-betting-slip > div > div > div.bettingslip_headerDelete.ng-star-inserted > div > button > span');
-            await this.timeout(500);
-            if (await page.$('#action') !== null) {
-                await page.click('#action');
-                await this.timeout(2000);
+        try {
+            const closePlaceBetButton = '#closeBetConfirmation';
+            if (await page.waitForSelector(closePlaceBetButton, {timeout: 2000})) {
+                await page.click(closePlaceBetButton);
+                await this.timeout(1000);
             }
+            const deletePanierButton = 'app-desktop > div.layout > div > div > div > app-right-menu > app-betting-slip > div > div > div.bettingslip_headerDelete.ng-star-inserted > div > button';
+            if (await page.waitForSelector(deletePanierButton, {timeout: 2000})) {
+                await page.click(deletePanierButton);
+                await this.timeout(500);
+                if (await page.waitForSelector('#action', {timeout: 2000})) {
+                    await page.click('#action');
+                    await this.timeout(2000);
+                }
+            }
+        } catch (e) {
+            console.log('==============================================================================');
+            console.log(e);
+            console.log('==============================================================================');
         }
     }
 

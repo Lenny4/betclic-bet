@@ -32,6 +32,17 @@ puppeteer.launch({
 }).then(async (browser) => {
     const betclicBet = new App(browser);
     console.log('ready');
+    // betclicBet.addBets(
+    //     [{
+    //         choiceName: '%2%',
+    //         matchName: 'test matchName',
+    //         matchId: '2652243',
+    //         betCode: 'lol',
+    //         guadeloupeDate: 'lol',
+    //         choiceOdd: 'lol',
+    //         maxOdd: 'lol',
+    //     }]
+    // );
 
     const job = new CronJob('0 1,6,11,16,21,26,31,36,41,46,51,56 * * * *', () => {
         superagent.get(process.env.BET_URL)
