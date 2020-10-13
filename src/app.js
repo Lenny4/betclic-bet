@@ -60,16 +60,52 @@ class App {
         let r = true;
         if (page.url().includes(bet.matchId)) {
             await this.clearPanier(page);
-            let buttonSelector = 'app-match > div > app-match-markets > app-market:nth-child(1) > div > div.ng-star-inserted > div > div > ';
-            if (bet.choiceName.toLowerCase() === '%1%') {
-                buttonSelector = 'div:nth-child(1) > app-selection';
-            } else if (bet.choiceName.toLowerCase() === '%2%') {
-                buttonSelector = 'div:nth-child(3) > app-selection';
-            } else if (bet.choiceName.toLowerCase() === 'nul') {
-                buttonSelector = 'div:nth-child(2) > app-selection';
-            } else {
-                r = false;
-                console.log('Error : no bet.choiceName defined for ' + bet.choiceName);
+            let buttonSelector = null;
+            // Résultat du match Foot -> %1% ou nul ou %2%
+            if(bet.betCode === 'Ftb_Mr3') {
+                buttonSelector = 'app-match > div > app-match-markets > app-market:nth-child(1) > div > div.ng-star-inserted > div > div > ';
+                if (bet.choiceName.toLowerCase() === '%1%') {
+                    buttonSelector = 'div:nth-child(1) > app-selection';
+                } else if (bet.choiceName.toLowerCase() === '%2%') {
+                    buttonSelector = 'div:nth-child(3) > app-selection';
+                } else if (bet.choiceName.toLowerCase() === 'nul') {
+                    buttonSelector = 'div:nth-child(2) > app-selection';
+                } else {
+                    r = false;
+                    console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
+                }
+            }
+            // Vainqueur du match Tennis -> %1% ou %2%
+            if(bet.betCode === 'Ten_Mr2') {
+                buttonSelector = 'app-match > div > app-match-markets > app-market:nth-child(1) > div > div.ng-star-inserted > div > div > ';
+                if (bet.choiceName.toLowerCase() === '%1%') {
+                    buttonSelector = 'div:nth-child(1) > app-selection';
+                } else if (bet.choiceName.toLowerCase() === '%2%') {
+                    buttonSelector = 'div:nth-child(2) > app-selection';
+                } else {
+                    r = false;
+                    console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
+                }
+            }
+            // Score final (Set) Tennis -> 2 - 0 ou 2 - 1 ou 0 - 2 ou 1 - 2
+            //TODO: Attention quand il y aura des GC ca ne fonctionnera sûrement plus car ça se joue en 3 set
+            //      -> 3 - 0 ou 3 - 1 ou 3 - 2 ou 0 - 3 ou 1 - 3 ou 2 - 3
+            //      Pas de match actuellement donc on peut pas tester le 3 set
+            if(bet.betCode === 'Ten_Set') {
+                // 2eme child
+                buttonSelector = 'app-match > div > app-match-markets > app-market:nth-child(2) > div > div.ng-star-inserted > div > div > ';
+                if (bet.choiceName.toLowerCase() === '2 - 0') {
+                    buttonSelector = 'div:nth-child(1) > app-selection';
+                } else if (bet.choiceName.toLowerCase() === '0 - 2') {
+                    buttonSelector = 'div:nth-child(2) > app-selection';
+                } else if (bet.choiceName.toLowerCase() === '2 - 1') {
+                    buttonSelector = 'div:nth-child(3) > app-selection';
+                } else if (bet.choiceName.toLowerCase() === '1 - 2') {
+                    buttonSelector = 'div:nth-child(4) > app-selection';
+                } else {
+                    r = false;
+                    console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
+                }
             }
             if (r) {
                 console.log('click on odd ...');
