@@ -65,11 +65,11 @@ class App {
             if(bet.betCode === 'Ftb_Mr3') {
                 buttonSelector = 'app-match > div > app-match-markets > app-market:nth-child(1) > div > div.ng-star-inserted > div > div > ';
                 if (bet.choiceName.toLowerCase() === '%1%') {
-                    buttonSelector = 'div:nth-child(1) > app-selection';
+                    buttonSelector += 'div:nth-child(1) > app-selection';
                 } else if (bet.choiceName.toLowerCase() === '%2%') {
-                    buttonSelector = 'div:nth-child(3) > app-selection';
+                    buttonSelector += 'div:nth-child(3) > app-selection';
                 } else if (bet.choiceName.toLowerCase() === 'nul') {
-                    buttonSelector = 'div:nth-child(2) > app-selection';
+                    buttonSelector += 'div:nth-child(2) > app-selection';
                 } else {
                     r = false;
                     console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
@@ -79,9 +79,9 @@ class App {
             if(bet.betCode === 'Ten_Mr2') {
                 buttonSelector = 'app-match > div > app-match-markets > app-market:nth-child(1) > div > div.ng-star-inserted > div > div > ';
                 if (bet.choiceName.toLowerCase() === '%1%') {
-                    buttonSelector = 'div:nth-child(1) > app-selection';
+                    buttonSelector += 'div:nth-child(1) > app-selection';
                 } else if (bet.choiceName.toLowerCase() === '%2%') {
-                    buttonSelector = 'div:nth-child(2) > app-selection';
+                    buttonSelector += 'div:nth-child(2) > app-selection';
                 } else {
                     r = false;
                     console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
@@ -92,22 +92,29 @@ class App {
             //      -> 3 - 0 ou 3 - 1 ou 3 - 2 ou 0 - 3 ou 1 - 3 ou 2 - 3
             //      Pas de match actuellement donc on peut pas tester le 3 set
             if(bet.betCode === 'Ten_Set') {
-                // 2eme child
-                buttonSelector = 'app-match > div > app-match-markets > app-market:nth-child(2) > div > div.ng-star-inserted > div > div > ';
-                if (bet.choiceName.toLowerCase() === '2 - 0') {
-                    buttonSelector = 'div:nth-child(1) > app-selection';
-                } else if (bet.choiceName.toLowerCase() === '0 - 2') {
-                    buttonSelector = 'div:nth-child(2) > app-selection';
-                } else if (bet.choiceName.toLowerCase() === '2 - 1') {
-                    buttonSelector = 'div:nth-child(3) > app-selection';
-                } else if (bet.choiceName.toLowerCase() === '1 - 2') {
-                    buttonSelector = 'div:nth-child(4) > app-selection';
+                buttonSelector = 'app-match > div > app-match-markets > app-market:nth-child(3) > div >  ';
+                const betName = await this.getTextFromSelector(page, buttonSelector + 'div.marketBox_head > h2');
+                console.log(betName);
+                if(betName.trim() === 'Score final (sets)') {
+                    buttonSelector += 'div.ng-star-inserted > div > div > ';
+                    if (bet.choiceName.toLowerCase() === '2 - 0') {
+                        buttonSelector += 'div:nth-child(1) > app-selection';
+                    } else if (bet.choiceName.toLowerCase() === '0 - 2') {
+                        buttonSelector += 'div:nth-child(2) > app-selection';
+                    } else if (bet.choiceName.toLowerCase() === '2 - 1') {
+                        buttonSelector += 'div:nth-child(3) > app-selection';
+                    } else if (bet.choiceName.toLowerCase() === '1 - 2') {
+                        buttonSelector += 'div:nth-child(4) > app-selection';
+                    } else {
+                        r = false;
+                        console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
+                    }
                 } else {
                     r = false;
                     console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
                 }
             }
-            if (r) {
+            if (r && buttonSelector !== null) {
                 console.log('click on odd ...');
                 await page.click(buttonSelector);
                 await this.timeout(500);
@@ -133,6 +140,12 @@ class App {
         await page.goto('about:blank');
         await page.close();
         this.bet();
+    }
+
+    async getTextFromSelector(page, selector) {
+        return await page.evaluate((selector) => {
+            return $(selector).text();
+        }, selector);
     }
 
     async clearPanier(page) {
