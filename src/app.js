@@ -52,7 +52,11 @@ class App {
         console.log('start try, page created for bet');
         const url = 'https://www.betclic.fr/' + '-m' + bet.matchId;
         console.log('page going to ' + url);
-        await page.goto(url);
+        await page.goto(url, {
+            waitUntil: 'load',
+            // Remove the timeout
+            timeout: 0
+        });
         await page.addScriptTag({path: 'lib/jquery-3.4.1.min.js'});
         console.log('page before login');
         page = await this.login(page);
@@ -150,17 +154,13 @@ class App {
 
     async clearPanier(page) {
         try {
-            const closePlaceBetButton = '#closeBetConfirmation';
-            if (await page.waitForSelector(closePlaceBetButton, {timeout: 2000})) {
-                await page.click(closePlaceBetButton);
-                await this.timeout(1000);
-            }
-            const deletePanierButton = 'app-desktop > div.layout > div > div > div > app-right-menu > app-betting-slip > div > div > div.bettingslip_headerDelete.ng-star-inserted > div > button';
+            const deletePanierButton = 'body > app-desktop > div.layout > div > div > div > app-right-menu > app-betting-slip > div > div > div.bettingslip_headerDelete.ng-star-inserted > div > button';
             if (await page.waitForSelector(deletePanierButton, {timeout: 2000})) {
                 await page.click(deletePanierButton);
                 await this.timeout(500);
-                if (await page.waitForSelector('#action', {timeout: 2000})) {
-                    await page.click('#action');
+                const supprimerButton = '#action';
+                if (await page.waitForSelector(supprimerButton, {timeout: 2000})) {
+                    await page.click(supprimerButton);
                     await this.timeout(2000);
                 }
             }
