@@ -35,6 +35,7 @@ class App {
         }
         this.doublons = this.doublons.filter(x => x.time >= (now - 3600));
         if (!this.isBetting) {
+            console.log('start betting');
             this.bet();
         }
     }
@@ -66,7 +67,7 @@ class App {
             await this.clearPanier(page);
             let buttonSelector = null;
             // Résultat du match Foot -> %1% ou nul ou %2%
-            if(bet.betCode === 'Ftb_Mr3') {
+            if (bet.betCode === 'Ftb_Mr3') {
                 buttonSelector = 'app-match > div > app-match-markets > app-market:nth-child(1) > div > div.ng-star-inserted > div > div > ';
                 if (bet.choiceName.toLowerCase() === '%1%') {
                     buttonSelector += 'div:nth-child(1) > app-selection';
@@ -80,7 +81,7 @@ class App {
                 }
             }
             // Vainqueur du match Tennis -> %1% ou %2%
-            if(bet.betCode === 'Ten_Mr2') {
+            if (bet.betCode === 'Ten_Mr2') {
                 buttonSelector = 'app-match > div > app-match-markets > app-market:nth-child(1) > div > div.ng-star-inserted > div > div > ';
                 if (bet.choiceName.toLowerCase() === '%1%') {
                     buttonSelector += 'div:nth-child(1) > app-selection';
@@ -95,11 +96,11 @@ class App {
             //TODO: Attention quand il y aura des GC ca ne fonctionnera sûrement plus car ça se joue en 3 set
             //      -> 3 - 0 ou 3 - 1 ou 3 - 2 ou 0 - 3 ou 1 - 3 ou 2 - 3
             //      Pas de match actuellement donc on peut pas tester le 3 set
-            if(bet.betCode === 'Ten_Set') {
+            if (bet.betCode === 'Ten_Set') {
                 buttonSelector = 'app-match > div > app-match-markets > app-market:nth-child(3) > div >  ';
                 const betName = await this.getTextFromSelector(page, buttonSelector + 'div.marketBox_head > h2');
                 console.log(betName);
-                if(betName.trim() === 'Score final (sets)') {
+                if (betName.trim() === 'Score final (sets)') {
                     buttonSelector += 'div.ng-star-inserted > div > div > ';
                     if (bet.choiceName.toLowerCase() === '2 - 0') {
                         buttonSelector += 'div:nth-child(1) > app-selection';
@@ -119,19 +120,40 @@ class App {
                 }
             }
             if (r && buttonSelector !== null) {
-                console.log('click on odd ...');
-                await page.click(buttonSelector);
-                await this.timeout(500);
-                console.log('enter amount ...');
-                await page.type('app-betting-slip-single-bet-item-footer > div > div > app-bs-stake > div > input', process.env.AMOUNT_BET);
-                await this.timeout(500);
+                try {
+                    console.log('click on odd ...');
+                    await page.click(buttonSelector);
+                    await this.timeout(500);
+                } catch (e) {
+                    await this.logError(e);
+                }
+                try {
+                    console.log('enter amount ...');
+                    await page.type('app-betting-slip-single-bet-item-footer > div > div > app-bs-stake > div > input', process.env.AMOUNT_BET);
+                    await this.timeout(500);
+                } catch (e) {
+                    await this.logError(e);
+                }
                 if (await page.$('bc-gb-cookie-banner > div > div > button') !== null) {
                     console.log('click remove cookie ...');
                     await page.click('bc-gb-cookie-banner > div > div > button');
                     await this.timeout(500);
                 }
-                console.log('click Parier ...');
-                await page.click('#betBtn');
+                try {
+                    console.log('click on bet button ...');
+                    await page.click('#betBtn');
+                    await this.timeout(2000);
+                } catch (e) {
+                    await this.logError(e);
+                }
+                if (await page.$('#closeBetConfirmation') !== null) {
+                    console.log('click on close confirmation bet ...');
+                    await page.click('#closeBetConfirmation');
+                    await this.timeout(500);
+
+                } else {
+                    this.logError('button close confirmation bet not found');
+                }
             }
         } else {
             console.log(bet.matchName + ' is not available on betclic : ' + page.url());
@@ -144,6 +166,29 @@ class App {
         await page.goto('about:blank');
         await page.close();
         this.bet();
+    }
+
+    async logError(error) {
+        console.log('==============================================================================');
+        console.log(error);
+        console.log('==============================================================================');
+
+        try {
+            const okButton = '#action';
+            if (await page.$(okButton) !== null) {
+                if (await page.waitForSelector(okButton, {timeout: 2000})) {
+                    await page.click(okButton);
+                    await this.timeout(2000);
+                    console.log('==============================================================================');
+                    console.log('Ok button found after error');
+                    console.log('==============================================================================');
+                }
+            }
+        } catch (e) {
+            console.log('==============================================================================');
+            console.log('button ok not found after logging error');
+            console.log('==============================================================================');
+        }
     }
 
     async getTextFromSelector(page, selector) {
