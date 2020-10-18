@@ -146,13 +146,13 @@ class App {
                 } catch (e) {
                     await this.logError(e);
                 }
-                if (await page.$('#closeBetConfirmation') !== null) {
+                const closeConfirmationBetButton = '#closeBetConfirmation';
+                if (await page.$(closeConfirmationBetButton) !== null) {
                     console.log('click on close confirmation bet ...');
-                    await page.click('#closeBetConfirmation');
+                    await page.click(closeConfirmationBetButton);
                     await this.timeout(500);
-
                 } else {
-                    this.logError('button close confirmation bet not found');
+                    await this.logError('button close confirmation bet not found');
                 }
             }
         } else {
@@ -200,13 +200,15 @@ class App {
     async clearPanier(page) {
         try {
             const deletePanierButton = 'body > app-desktop > div.layout > div > div > div > app-right-menu > app-betting-slip > div > div > div.bettingslip_headerDelete.ng-star-inserted > div > button';
-            if (await page.waitForSelector(deletePanierButton, {timeout: 2000})) {
-                await page.click(deletePanierButton);
-                await this.timeout(500);
-                const supprimerButton = '#action';
-                if (await page.waitForSelector(supprimerButton, {timeout: 2000})) {
-                    await page.click(supprimerButton);
-                    await this.timeout(2000);
+            if (await page.$(deletePanierButton) !== null) {
+                if (await page.waitForSelector(deletePanierButton, {timeout: 2000})) {
+                    await page.click(deletePanierButton);
+                    await this.timeout(500);
+                    const supprimerButton = '#action';
+                    if (await page.waitForSelector(supprimerButton, {timeout: 2000})) {
+                        await page.click(supprimerButton);
+                        await this.timeout(2000);
+                    }
                 }
             }
         } catch (e) {
