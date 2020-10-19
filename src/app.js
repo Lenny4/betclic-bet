@@ -125,6 +125,7 @@ class App {
                     await page.click(buttonSelector);
                     await this.timeout(500);
                 } catch (e) {
+                    await page.screenshot({path: bet.matchName + '_click_odd.png', fullPage: true});
                     await this.logError(e);
                 }
                 try {
