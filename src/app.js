@@ -58,7 +58,9 @@ class App {
             // Remove the timeout
             timeout: 0
         });
+        await this.timeout(2000);
         await page.addScriptTag({path: 'lib/jquery-3.4.1.min.js'});
+        await this.timeout(500);
         console.log('page before login');
         page = await this.login(page);
         console.log('start canBet');
@@ -116,7 +118,7 @@ class App {
                     }
                 } else {
                     r = false;
-                    console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
+                    console.log('Error : no bet.betCode defined for ' + bet.betCode);
                 }
             }
             if (r && buttonSelector !== null) {
