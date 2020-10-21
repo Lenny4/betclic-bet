@@ -122,6 +122,9 @@ class App {
             if (r && buttonSelector !== null) {
                 try {
                     console.log('click on odd ...');
+                    if (await page.$(buttonSelector) === null) {
+                        await this.timeout(5000);
+                    }
                     await page.click(buttonSelector);
                     await this.timeout(500);
                 } catch (e) {
