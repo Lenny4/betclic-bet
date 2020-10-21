@@ -68,7 +68,7 @@ class App {
             let buttonSelector = null;
             // Résultat du match Foot -> %1% ou nul ou %2%
             if (bet.betCode === 'Ftb_Mr3') {
-                buttonSelector = 'app-match > div > app-match-markets > app-market:nth-child(1) > div > div.ng-star-inserted > div > div > ';
+                buttonSelector = 'app-content-scroller > div > app-match > div > app-match-markets > bcdk-vertical-scroller > div > div.verticalScroller_wrapper > div > div > app-market:nth-child(1) > div > div.ng-star-inserted > div > div > ';
                 if (bet.choiceName.toLowerCase() === '%1%') {
                     buttonSelector += 'div:nth-child(1) > app-selection';
                 } else if (bet.choiceName.toLowerCase() === '%2%') {
@@ -82,7 +82,7 @@ class App {
             }
             // Vainqueur du match Tennis -> %1% ou %2%
             if (bet.betCode === 'Ten_Mr2') {
-                buttonSelector = 'app-match > div > app-match-markets > app-market:nth-child(1) > div > div.ng-star-inserted > div > div > ';
+                buttonSelector = 'app-content-scroller > div > app-match > div > app-match-markets > bcdk-vertical-scroller > div > div.verticalScroller_wrapper > div > div > app-market:nth-child(1) > div > div.ng-star-inserted > div > div > ';
                 if (bet.choiceName.toLowerCase() === '%1%') {
                     buttonSelector += 'div:nth-child(1) > app-selection';
                 } else if (bet.choiceName.toLowerCase() === '%2%') {
@@ -97,7 +97,7 @@ class App {
             //      -> 3 - 0 ou 3 - 1 ou 3 - 2 ou 0 - 3 ou 1 - 3 ou 2 - 3
             //      Pas de match actuellement donc on peut pas tester le 3 set
             if (bet.betCode === 'Ten_Set') {
-                buttonSelector = 'app-match > div > app-match-markets > app-market:nth-child(3) > div >  ';
+                buttonSelector = 'app-content-scroller > div > app-match > div > app-match-markets > bcdk-vertical-scroller > div > div.verticalScroller_wrapper > div > div > app-market:nth-child(3) > div >  ';
                 const betName = await this.getTextFromSelector(page, buttonSelector + 'div.marketBox_head > h2');
                 console.log(betName);
                 if (betName.trim() === 'Score final (sets)') {
