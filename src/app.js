@@ -6,7 +6,7 @@ class App {
         this.doublons = [];
         this.isBetting = false;
         this.browser = browser;
-        this.loginButton = 'header.header a[href^="/connexion"]';
+        this.loginButton = 'body > app-desktop > bc-gb-header > header > div > div.buttonWrapper > a';
         this.loginForm = 'login-form';
     }
 
@@ -230,8 +230,9 @@ class App {
             return page;
         }
         console.log('not logging yet, click logging button');
-        const loginFormVisible = page.waitForSelector(this.loginForm, {visible: true});
+        await this.timeout(1000);
         await page.click(this.loginButton);
+        const loginFormVisible = page.waitForSelector(this.loginForm, {visible: true});
         await loginFormVisible;
         const loginDone = page.waitForSelector('body > app-desktop > bc-gb-header > header > div > a.header_account.prebootFreeze.ng-star-inserted > span', {visible: true});
         await this.timeout(500);
