@@ -61,6 +61,7 @@ class App {
         await page.addScriptTag({path: 'lib/jquery-3.4.1.min.js'});
         console.log('page before login');
         page = await this.login(page);
+        await this.timeout(2000);
         console.log('start canBet');
         let r = true;
         if (page.url().includes(bet.matchId)) {
@@ -68,56 +69,48 @@ class App {
             let buttonSelector = null;
             // Résultat du match Foot -> %1% ou nul ou %2%
             if (bet.betCode === 'Ftb_Mr3') {
-                buttonSelector = 'app-content-scroller > div > app-match > div > app-match-markets > bcdk-vertical-scroller > div > div.verticalScroller_wrapper > div > div > app-market:nth-child(1) > div > div.ng-star-inserted > div > div > ';
-                if (bet.choiceName.toLowerCase() === '%1%') {
-                    buttonSelector += 'div:nth-child(1) > app-selection';
-                } else if (bet.choiceName.toLowerCase() === '%2%') {
-                    buttonSelector += 'div:nth-child(3) > app-selection';
-                } else if (bet.choiceName.toLowerCase() === 'nul') {
-                    buttonSelector += 'div:nth-child(2) > app-selection';
+                const betNameFtb_Mr3 = 'Résultat du match';
+                const indexBetFtb_Mr3 = await this.getIndexOfBet(page, betNameFtb_Mr3);
+                if (indexBetFtb_Mr3 === null) {
+                    console.log('Error : no bet.betName defined for ' + betNameFtb_Mr3);
                 } else {
-                    r = false;
-                    console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
-                }
-            }
-            // Vainqueur du match Tennis -> %1% ou %2%
-            if (bet.betCode === 'Ten_Mr2') {
-                buttonSelector = 'app-content-scroller > div > app-match > div > app-match-markets > bcdk-vertical-scroller > div > div.verticalScroller_wrapper > div > div > app-market:nth-child(1) > div > div.ng-star-inserted > div > div > ';
-                if (bet.choiceName.toLowerCase() === '%1%') {
-                    buttonSelector += 'div:nth-child(1) > app-selection';
-                } else if (bet.choiceName.toLowerCase() === '%2%') {
-                    buttonSelector += 'div:nth-child(2) > app-selection';
-                } else {
-                    r = false;
-                    console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
-                }
-            }
-            // Score final (Set) Tennis -> 2 - 0 ou 2 - 1 ou 0 - 2 ou 1 - 2
-            //TODO: Attention quand il y aura des GC ca ne fonctionnera sûrement plus car ça se joue en 3 set
-            //      -> 3 - 0 ou 3 - 1 ou 3 - 2 ou 0 - 3 ou 1 - 3 ou 2 - 3
-            //      Pas de match actuellement donc on peut pas tester le 3 set
-            if (bet.betCode === 'Ten_Set') {
-                buttonSelector = 'app-content-scroller > div > app-match > div > app-match-markets > bcdk-vertical-scroller > div > div.verticalScroller_wrapper > div > div > app-market:nth-child(3) > div >  ';
-                const betName = await this.getTextFromSelector(page, buttonSelector + 'div.marketBox_head > h2');
-                console.log(betName);
-                if (betName.trim() === 'Score final (sets)') {
-                    buttonSelector += 'div.ng-star-inserted > div > div > ';
-                    if (bet.choiceName.toLowerCase() === '2 - 0') {
+                    buttonSelector = 'div.verticalScroller_wrapper > div > div > app-market:nth-child(' + indexBetFtb_Mr3 + ') > div > div.ng-star-inserted > div > div > ';
+                    if (bet.choiceName.toLowerCase() === '%1%') {
                         buttonSelector += 'div:nth-child(1) > app-selection';
-                    } else if (bet.choiceName.toLowerCase() === '0 - 2') {
-                        buttonSelector += 'div:nth-child(2) > app-selection';
-                    } else if (bet.choiceName.toLowerCase() === '2 - 1') {
+                    } else if (bet.choiceName.toLowerCase() === '%2%') {
                         buttonSelector += 'div:nth-child(3) > app-selection';
-                    } else if (bet.choiceName.toLowerCase() === '1 - 2') {
-                        buttonSelector += 'div:nth-child(4) > app-selection';
+                    } else if (bet.choiceName.toLowerCase() === 'nul') {
+                        buttonSelector += 'div:nth-child(2) > app-selection';
                     } else {
                         r = false;
                         console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
                     }
-                } else {
-                    r = false;
-                    console.log('Error : no bet.betCode defined for ' + bet.betCode);
                 }
+            }
+            // Vainqueur du match Tennis -> %1% ou %2%
+            if (bet.betCode === 'Ten_Mr2') {
+                const betNameTen_Mr2 = 'Vainqueur du match';
+                const indexBetTen_Mr2 = await this.getIndexOfBet(page, betNameTen_Mr2);
+                if (indexBetTen_Mr2 === null) {
+                    console.log('Error : no bet.betName defined for ' + betNameTen_Mr2);
+                } else {
+                    buttonSelector = 'div.verticalScroller_wrapper > div > div > app-market:nth-child(' + indexBetTen_Mr2 + ') > div > div.ng-star-inserted > div > div > ';
+                    if (bet.choiceName.toLowerCase() === '%1%') {
+                        buttonSelector += 'div:nth-child(1) > app-selection';
+                    } else if (bet.choiceName.toLowerCase() === '%2%') {
+                        buttonSelector += 'div:nth-child(2) > app-selection';
+                    } else {
+                        r = false;
+                        console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
+                    }
+                }
+            }
+            // Score final (Set) Tennis
+            if (bet.betCode === 'Ten_Set') {
+                buttonSelector = await this.getSelectorToBet(page, 'Score final (sets)', bet.choiceName);
+            }
+            if (bet.betCode === 'Bsb_Trn') {
+                buttonSelector = await this.getSelectorToBet(page, 'Total Runs', bet.choiceName);
             }
             if (r && buttonSelector !== null) {
                 try {
@@ -170,6 +163,45 @@ class App {
         await page.goto('about:blank');
         await page.close();
         this.bet();
+    }
+
+    async getSelectorToBet(page, betName, choiceName) {
+        let buttonSelector;
+        const indexBet = await this.getIndexOfBet(page, betName);
+        if (indexBet === null) {
+            console.log('Error : no bet.betName defined for ' + betName);
+        } else {
+            buttonSelector = 'div.verticalScroller_wrapper > div > div > app-market:nth-child(' + indexBet + ') > div';
+            const indexChoice = await this.getIndexOfChoice(page, buttonSelector, choiceName);
+            if (indexChoice === null) {
+                console.log('Error : no bet.choiceName defined for ' + choiceName);
+            } else {
+                buttonSelector += ' > div.ng-star-inserted > div > div > div:nth-child(' + indexChoice + ') > app-selection';
+            }
+        }
+        return buttonSelector;
+    }
+
+    async getIndexOfBet(page, betName) {
+        for (let index = 0; index < 10; index++) {
+            const selectorTmp = 'div.verticalScroller_wrapper > div > div > app-market:nth-child(' + index + ') > div >  div.marketBox_head > h2';
+            const betNameTmp = (await this.getTextFromSelector(page, selectorTmp)).trim();
+            if (betName.toLowerCase() === betNameTmp.toLowerCase()) {
+                return index;
+            }
+        }
+        return null;
+    }
+
+    async getIndexOfChoice(page, selector, choiceName) {
+        for (let index = 0; index < 20; index++) {
+            const selectorTmp = selector + ' > div.ng-star-inserted > div > div > div:nth-child(' + index + ') > p';
+            const choiceNameTmp = (await this.getTextFromSelector(page, selectorTmp)).trim();
+            if (choiceNameTmp.toLowerCase() === choiceName.toLowerCase()) {
+                return index;
+            }
+        }
+        return null;
     }
 
     async logError(error) {

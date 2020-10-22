@@ -48,7 +48,6 @@ puppeteer.launch({
         try {
             superagent.get(process.env.BET_URL)
                 .then(res => {
-                    console.log(res.body);
                     betclicBet.addBets(res.body.matchs);
                 })
                 .catch(err => {
