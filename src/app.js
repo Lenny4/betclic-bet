@@ -248,6 +248,22 @@ class App {
         await this.timeout(500);
         await loginDone;
         console.log('logging done !');
+        try {
+            const okButton = '#action';
+            if (await page.$(okButton) !== null) {
+                if (await page.waitForSelector(okButton, {timeout: 2000})) {
+                    await page.click(okButton);
+                    await this.timeout(2000);
+                    console.log('==============================================================================');
+                    console.log('Ok button found after login');
+                    console.log('==============================================================================');
+                }
+            }
+        } catch (e) {
+            console.log('==============================================================================');
+            console.log('button ok not found after logging error');
+            console.log('==============================================================================');
+        }
         return page;
     }
 
