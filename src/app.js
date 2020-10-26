@@ -283,11 +283,19 @@ class App {
         await this.timeout(500);
         await page.click('login-form > form > div.buttonWrapper > button');
         await this.timeout(500);
-        await loginDone;
-        console.log('logging done !');
         try {
             const okButton = '#action';
             if (await page.$(okButton) !== null) {
+                if (await page.waitForSelector(okButton, {timeout: 2000})) {
+                    await page.click(okButton);
+                    await this.timeout(2000);
+                    console.log('==============================================================================');
+                    console.log('Ok button found after login');
+                    console.log('==============================================================================');
+                }
+            }
+            const okButton2 = 'body > app-desktop > div.layout > div > app-content-scroller > div > winnings-page > div > div > div.buttonWrapper > button ';
+            if (await page.$(okButton2) !== null) {
                 if (await page.waitForSelector(okButton, {timeout: 2000})) {
                     await page.click(okButton);
                     await this.timeout(2000);
@@ -301,6 +309,8 @@ class App {
             console.log('button ok not found after logging error');
             console.log('==============================================================================');
         }
+        await loginDone;
+        console.log('logging done !');
         return page;
     }
 
