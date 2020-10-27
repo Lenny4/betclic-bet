@@ -61,7 +61,7 @@ class App {
         await page.addScriptTag({path: 'lib/jquery-3.4.1.min.js'});
         console.log('page before login');
         page = await this.login(page);
-        await this.timeout(2000);
+        await this.timeout(5000);
         console.log('start canBet');
         let r = true;
         if (page.url().includes(bet.matchId)) {
@@ -265,7 +265,7 @@ class App {
             return page;
         }
         console.log('not logging yet, click logging button');
-        await this.timeout(1000);
+        await this.timeout(5000);
         await page.click(this.loginButton);
         const loginFormVisible = page.waitForSelector(this.loginForm, {visible: true});
         await loginFormVisible;
