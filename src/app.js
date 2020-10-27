@@ -109,8 +109,47 @@ class App {
             if (bet.betCode === 'Ten_Set') {
                 buttonSelector = await this.getSelectorToBet(page, 'Score final (sets)', bet.choiceName);
             }
+            // Baseball nombre total de run
             if (bet.betCode === 'Bsb_Trn') {
                 buttonSelector = await this.getSelectorToBet(page, 'Total Runs', bet.choiceName);
+            }
+            // Vainqueur du match (Basket)
+            if (bet.betCode === 'Bkb_Mr6') {
+                const betNameBkb_Mr6 = 'Vainqueur du match';
+                const indexBetTen_Mr2 = await this.getIndexOfBet(page, betNameBkb_Mr6);
+                if (indexBetTen_Mr2 === null) {
+                    console.log('Error : no bet.betName defined for ' + betNameBkb_Mr6);
+                } else {
+                    buttonSelector = 'div.verticalScroller_wrapper > div > div > app-market:nth-child(' + indexBetTen_Mr2 + ') > div > div.ng-star-inserted > div > div > ';
+                    if (bet.choiceName.toLowerCase() === '%1%') {
+                        buttonSelector += 'div:nth-child(1) > app-selection';
+                    } else if (bet.choiceName.toLowerCase() === '%2%') {
+                        buttonSelector += 'div:nth-child(2) > app-selection';
+                    } else {
+                        r = false;
+                        console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
+                    }
+                }
+            }
+            // Résultat du match (Basket)
+            if (bet.betCode === 'Bkb_Mrs') {
+                const betNameBkb_Mrs = 'Résultat du match';
+                const indexBetFtb_Mr3 = await this.getIndexOfBet(page, betNameBkb_Mrs);
+                if (indexBetFtb_Mr3 === null) {
+                    console.log('Error : no bet.betName defined for ' + betNameBkb_Mrs);
+                } else {
+                    buttonSelector = 'div.verticalScroller_wrapper > div > div > app-market:nth-child(' + indexBetFtb_Mr3 + ') > div > div.ng-star-inserted > div > div > ';
+                    if (bet.choiceName.toLowerCase() === '%1%') {
+                        buttonSelector += 'div:nth-child(1) > app-selection';
+                    } else if (bet.choiceName.toLowerCase() === '%2%') {
+                        buttonSelector += 'div:nth-child(3) > app-selection';
+                    } else if (bet.choiceName.toLowerCase() === 'nul') {
+                        buttonSelector += 'div:nth-child(2) > app-selection';
+                    } else {
+                        r = false;
+                        console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
+                    }
+                }
             }
             if (r && buttonSelector !== null) {
                 try {
