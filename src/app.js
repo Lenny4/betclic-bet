@@ -6,8 +6,8 @@ class App {
         this.doublons = [];
         this.isBetting = false;
         this.browser = browser;
-        this.loginButton = '.is-secondary.is-outline.is-small.buttonLink.prebootFreeze.button';
-        // this.loginButton = 'body > app-desktop > bc-gb-header > header > div > div.buttonWrapper > a';
+        // this.loginButton = '.is-secondary.is-outline.is-small.buttonLink.prebootFreeze.button';
+        this.loginButton = 'body > app-desktop > bc-gb-header > header > div > div.buttonWrapper';
         this.loginForm = 'login-form';
     }
 
