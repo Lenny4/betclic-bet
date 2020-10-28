@@ -325,8 +325,8 @@ class App {
         await this.timeout(500);
         await page.type('#date', process.env.LOGIN_DAY + process.env.LOGIN_MONTH + process.env.LOGIN_YEAR);
         await this.timeout(500);
-        await page.click('login-form > form > div.buttonWrapper > button');
-        await this.timeout(500);
+        await page.click('body > app-desktop > div.layout > div > app-content-scroller > div > login-page > div > div > div.container_content > div.box > div.box_content > login-form > form > div.buttonWrapper > button');
+        await this.timeout(2000);
         try {
             const okButton = '#action';
             if (await page.$(okButton) !== null) {
@@ -360,7 +360,6 @@ class App {
             timeout: 0
         });
         await page.addScriptTag({path: 'lib/jquery-3.4.1.min.js'});
-        await this.timeout(1000);
         return page;
     }
 
