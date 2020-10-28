@@ -7,7 +7,7 @@ class App {
         this.isBetting = false;
         this.browser = browser;
         // this.loginButton = '.is-secondary.is-outline.is-small.buttonLink.prebootFreeze.button';
-        this.loginButton = 'body > app-desktop > bc-gb-header > header > div > div.buttonWrapper';
+        this.loginButton = 'body > app-desktop > bc-gb-header > header > div > div.buttonWrapper > a';
         this.loginForm = 'login-form';
     }
 
@@ -306,8 +306,9 @@ class App {
         }
         console.log('not logging yet, click logging button');
         await this.timeout(3000);
+        const loginButton = await page.$x("//a[contains(text(), 'Connexion')]");
         try {
-            await page.click(this.loginButton);
+            await loginButton[0].click();
         } catch(e) {
             // A virer si ca ne fonctionne pas
             const okButton = '#action';
@@ -323,7 +324,6 @@ class App {
             console.log('==============================================================================');
             console.log('Button connexion not found, or cannot click');
             console.log('==============================================================================');
-            await page.screenshot({path: 'login_after_click_odd.png', fullPage: true});
         }
         const loginFormVisible = page.waitForSelector(this.loginForm, {visible: true});
         await loginFormVisible;
