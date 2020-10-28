@@ -61,7 +61,7 @@ class App {
         });
         await page.addScriptTag({path: 'lib/jquery-3.4.1.min.js'});
         console.log('page before login');
-        page = await this.login(page);
+        page = await this.login(page, url);
         await this.timeout(5000);
         console.log('start canBet');
         let r = true;
@@ -294,7 +294,7 @@ class App {
         }
     }
 
-    async login(page = null) {
+    async login(page = null, returnUrl) {
         if (page === null) {
             page = await this.browser.newPage();
             await page.goto('https://www.betclic.fr/');
@@ -304,30 +304,16 @@ class App {
             console.log('already logging');
             return page;
         }
-        console.log('not logging yet, click logging button');
+        console.log('not logging yet, go to login page');
+        await page.goto('https://www.betclic.fr/connexion', {
+            waitUntil: ['load', 'networkidle0', 'domcontentloaded', 'networkidle2'],
+            // Remove the timeout
+            timeout: 0
+        });
+        await page.addScriptTag({path: 'lib/jquery-3.4.1.min.js'});
         await this.timeout(3000);
-        const loginButton = await page.$x("//a[contains(text(), 'Connexion')]");
-        try {
-            await loginButton[0].click();
-        } catch(e) {
-            // A virer si ca ne fonctionne pas
-            const okButton = '#action';
-            if (await page.$(okButton) !== null) {
-                if (await page.waitForSelector(okButton, {timeout: 2000})) {
-                    await page.click(okButton);
-                    await this.timeout(2000);
-                    console.log('==============================================================================');
-                    console.log('Ok button found before click on button connexion');
-                    console.log('==============================================================================');
-                }
-            }
-            console.log('==============================================================================');
-            console.log('Button connexion not found, or cannot click');
-            console.log('==============================================================================');
-        }
         const loginFormVisible = page.waitForSelector(this.loginForm, {visible: true});
         await loginFormVisible;
-        const loginDone = page.waitForSelector('body > app-desktop > bc-gb-header > header > div > a.header_account.prebootFreeze.ng-star-inserted > span', {visible: true});
         await this.timeout(500);
         const loginSelector = '#loginPage_username > input';
         await this.deleteInputValue(page, loginSelector);
@@ -367,8 +353,14 @@ class App {
             console.log('button ok not found after logging error');
             console.log('==============================================================================');
         }
-        await loginDone;
         console.log('logging done !');
+        await page.goto(returnUrl, {
+            waitUntil: ['load', 'networkidle0', 'domcontentloaded', 'networkidle2'],
+            // Remove the timeout
+            timeout: 0
+        });
+        await page.addScriptTag({path: 'lib/jquery-3.4.1.min.js'});
+        await this.timeout(1000);
         return page;
     }
 
