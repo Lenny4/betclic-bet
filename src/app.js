@@ -6,7 +6,8 @@ class App {
         this.doublons = [];
         this.isBetting = false;
         this.browser = browser;
-        this.loginButton = 'body > app-desktop > bc-gb-header > header > div > div.buttonWrapper > a';
+        this.loginButton = '.is-secondary.is-outline.is-small.buttonLink.prebootFreeze.button';
+        // this.loginButton = 'body > app-desktop > bc-gb-header > header > div > div.buttonWrapper > a';
         this.loginForm = 'login-form';
     }
 
@@ -35,7 +36,6 @@ class App {
         }
         this.doublons = this.doublons.filter(x => x.time >= (now - 3600));
         if (!this.isBetting) {
-            console.log('start betting');
             this.bet();
         }
     }
@@ -46,6 +46,7 @@ class App {
             this.isBetting = false;
             return;
         }
+        console.log('start betting');
         const now = Math.round(new Date().getTime() / 1000);
         const bet = this.bets[0];
         console.log('is betting on ', bet);
@@ -54,7 +55,7 @@ class App {
         const url = 'https://www.betclic.fr/' + '-m' + bet.matchId;
         console.log('page going to ' + url);
         await page.goto(url, {
-            waitUntil: 'load',
+            waitUntil: ['load', 'networkidle0', 'domcontentloaded', 'networkidle2'],
             // Remove the timeout
             timeout: 0
         });
@@ -299,12 +300,12 @@ class App {
             await page.goto('https://www.betclic.fr/');
             await page.addScriptTag({path: 'lib/jquery-3.4.1.min.js'});
         }
-        if (await this.isLogin(page, false)) {
+        if (await this.isLogin(page)) {
             console.log('already logging');
             return page;
         }
         console.log('not logging yet, click logging button');
-        await this.timeout(5000);
+        await this.timeout(3000);
         await page.click(this.loginButton);
         const loginFormVisible = page.waitForSelector(this.loginForm, {visible: true});
         await loginFormVisible;
@@ -361,18 +362,20 @@ class App {
         await page.keyboard.press('Backspace');
     }
 
-    /**
-     * @param page: need to be on a betclic page with jquery injected
-     * @param reloadPage
-     * @returns {Promise<boolean>}
-     */
-    async isLogin(page, reloadPage = true) {
-        if (reloadPage) {
-            await page.reload({waitUntil: ['networkidle0', 'domcontentloaded']});
-        }
+    async isLogin(page) {
         return await page.evaluate((loginButton) => {
             const loginButtonEl = $(loginButton);
-            return (!($(loginButtonEl).length >= 1 && $(loginButtonEl).is(':visible')));
+            if (!($(loginButtonEl).length >= 1)) {
+                if ($(loginButtonEl).is(':visible')) {
+                    return true;
+                } else {
+                    console.log("Login button not visible");
+                    return false;
+                }
+            } else {
+                console.log("Login button not found");
+                return false;
+            }
         }, this.loginButton);
     }
 

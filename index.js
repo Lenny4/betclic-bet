@@ -44,7 +44,7 @@ puppeteer.launch({
     //     }]
     // );
 
-    const job = new CronJob('0 1,6,11,16,21,26,31,36,41,46,51,56 * * * *', () => {
+    const job = new CronJob('1 11,21,31,41,51 * * * *', () => {
         try {
             superagent.get(process.env.BET_URL + "?minutesRange=" + process.env.MINUTES_RANGE)
                 .then(res => {
