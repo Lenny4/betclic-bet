@@ -306,7 +306,25 @@ class App {
         }
         console.log('not logging yet, click logging button');
         await this.timeout(3000);
-        await page.click(this.loginButton);
+        try {
+            await page.click(this.loginButton);
+        } catch(e) {
+            // A virer si ca ne fonctionne pas
+            const okButton = '#action';
+            if (await page.$(okButton) !== null) {
+                if (await page.waitForSelector(okButton, {timeout: 2000})) {
+                    await page.click(okButton);
+                    await this.timeout(2000);
+                    console.log('==============================================================================');
+                    console.log('Ok button found before click on button connexion');
+                    console.log('==============================================================================');
+                }
+            }
+            console.log('==============================================================================');
+            console.log('Button connexion not found, or cannot click');
+            console.log('==============================================================================');
+            await page.screenshot({path: 'login_after_click_odd.png', fullPage: true});
+        }
         const loginFormVisible = page.waitForSelector(this.loginForm, {visible: true});
         await loginFormVisible;
         const loginDone = page.waitForSelector('body > app-desktop > bc-gb-header > header > div > a.header_account.prebootFreeze.ng-star-inserted > span', {visible: true});
