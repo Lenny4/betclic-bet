@@ -305,13 +305,9 @@ class App {
             return page;
         }
         console.log('not logging yet, go to login page');
-        await page.goto('https://www.betclic.fr/connexion', {
-            waitUntil: ['load', 'networkidle0', 'domcontentloaded', 'networkidle2'],
-            // Remove the timeout
-            timeout: 0
-        });
-        await page.addScriptTag({path: 'lib/jquery-3.4.1.min.js'});
-        await this.timeout(3000);
+        await this.timeout(1000);
+        await this.deletePopUp(page);
+        await page.click(this.loginButton);
         const loginFormVisible = page.waitForSelector(this.loginForm, {visible: true});
         await loginFormVisible;
         await this.timeout(500);
@@ -325,7 +321,8 @@ class App {
         await this.timeout(500);
         await page.type('#date', process.env.LOGIN_DAY + process.env.LOGIN_MONTH + process.env.LOGIN_YEAR);
         await this.timeout(500);
-        await page.click('body > app-desktop > div.layout > div > app-content-scroller > div > login-page > div > div > div.container_content > div.box > div.box_content > login-form > form > div.buttonWrapper > button');
+        await this.deletePopUp(page);
+        await page.click('login-page > div > div > div.container_content > div.box > div.box_content > login-form > form > div.buttonWrapper > button');
         await this.timeout(2000);
         try {
             const okButton = '#action';
@@ -354,12 +351,6 @@ class App {
             console.log('==============================================================================');
         }
         console.log('logging done !');
-        await page.goto(returnUrl, {
-            waitUntil: ['load', 'networkidle0', 'domcontentloaded', 'networkidle2'],
-            // Remove the timeout
-            timeout: 0
-        });
-        await page.addScriptTag({path: 'lib/jquery-3.4.1.min.js'});
         return page;
     }
 
@@ -386,6 +377,16 @@ class App {
                 return false;
             }
         }, this.loginButton);
+    }
+
+    async deletePopUp(page) {
+        const popUpSelector = 'body > app-desktop > bc-gb-modal-popup > div';
+        await page.evaluate((selector) => {
+            const elements = document.querySelectorAll(selector);
+            for (let i = 0; i < elements.length; i++) {
+                elements[i].parentNode.removeChild(elements[i]);
+            }
+        }, popUpSelector)
     }
 
     async timeout(time) {

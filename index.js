@@ -35,9 +35,9 @@ puppeteer.launch({
     if (false) {
         betclicBet.addBets(
             [{
-                choiceName: '%2%',
+                choiceName: '%1%',
                 matchName: 'test matchName',
-                matchId: '2695303',
+                matchId: '2695918',
                 betCode: 'Ftb_Mr3',
                 guadeloupeDate: 'lol',
                 choiceOdd: 'lol',
