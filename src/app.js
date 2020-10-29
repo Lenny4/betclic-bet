@@ -158,8 +158,7 @@ class App {
                     if (await page.$(buttonSelector) === null) {
                         await this.timeout(5000);
                     }
-                    await page.click(buttonSelector);
-                    await this.timeout(500);
+                    await this.selectorClick(page, buttonSelector);
                 } catch (e) {
                     await page.screenshot({path: bet.matchName + '_click_odd.png', fullPage: true});
                     await this.logError(e);
@@ -173,12 +172,11 @@ class App {
                 }
                 if (await page.$('bc-gb-cookie-banner > div > div > button') !== null) {
                     console.log('click remove cookie ...');
-                    await page.click('bc-gb-cookie-banner > div > div > button');
-                    await this.timeout(500);
+                    await this.selectorClick(page, 'bc-gb-cookie-banner > div > div > button');
                 }
                 try {
                     console.log('click on bet button ...');
-                    await page.click('#betBtn');
+                    await this.selectorClick(page, '#betBtn');
                     await this.timeout(2000);
                 } catch (e) {
                     await this.logError(e);
@@ -186,8 +184,7 @@ class App {
                 const closeConfirmationBetButton = '#closeBetConfirmation';
                 if (await page.$(closeConfirmationBetButton) !== null) {
                     console.log('click on close confirmation bet ...');
-                    await page.click(closeConfirmationBetButton);
-                    await this.timeout(500);
+                    await this.selectorClick(page, closeConfirmationBetButton);
                 } else {
                     await this.logError('button close confirmation bet not found');
                 }
@@ -253,7 +250,7 @@ class App {
             const okButton = '#action';
             if (await page.$(okButton) !== null) {
                 if (await page.waitForSelector(okButton, {timeout: 2000})) {
-                    await page.click(okButton);
+                    await this.selectorClick(page, okButton);
                     await this.timeout(2000);
                     console.log('==============================================================================');
                     console.log('Ok button found after error');
@@ -278,11 +275,10 @@ class App {
             const deletePanierButton = 'body > app-desktop > div.layout > div > div > div > app-right-menu > app-betting-slip > div > div > div.bettingslip_headerDelete.ng-star-inserted > div > button';
             if (await page.$(deletePanierButton) !== null) {
                 if (await page.waitForSelector(deletePanierButton, {timeout: 2000})) {
-                    await page.click(deletePanierButton);
-                    await this.timeout(500);
+                    await this.selectorClick(page, deletePanierButton);
                     const supprimerButton = '#action';
                     if (await page.waitForSelector(supprimerButton, {timeout: 2000})) {
-                        await page.click(supprimerButton);
+                        await this.selectorClick(page, supprimerButton);
                         await this.timeout(2000);
                     }
                 }
@@ -307,10 +303,9 @@ class App {
         console.log('not logging yet, go to login page');
         await this.timeout(1000);
         await this.deletePopUp(page);
-        await page.$eval(this.loginButton, x => x.click());
+        await this.selectorClick(page, this.loginButton);
         const loginFormVisible = page.waitForSelector(this.loginForm, {visible: true});
         await loginFormVisible;
-        await this.timeout(500);
         const loginSelector = '#loginPage_username > input';
         await this.deleteInputValue(page, loginSelector);
         await page.type(loginSelector, process.env.LOGIN_USERNAME);
@@ -322,13 +317,13 @@ class App {
         await page.type('#date', process.env.LOGIN_DAY + process.env.LOGIN_MONTH + process.env.LOGIN_YEAR);
         await this.timeout(500);
         await this.deletePopUp(page);
-        await page.click('login-page > div > div > div.container_content > div.box > div.box_content > login-form > form > div.buttonWrapper > button');
+        await this.selectorClick(page, 'login-page > div > div > div.container_content > div.box > div.box_content > login-form > form > div.buttonWrapper > button');
         await this.timeout(2000);
         try {
             const okButton = '#action';
             if (await page.$(okButton) !== null) {
                 if (await page.waitForSelector(okButton, {timeout: 2000})) {
-                    await page.click(okButton);
+                    await this.selectorClick(page, okButton);
                     await this.timeout(2000);
                     console.log('==============================================================================');
                     console.log('Ok button found after login');
@@ -337,8 +332,8 @@ class App {
             }
             const okButton2 = 'body > app-desktop > div.layout > div > app-content-scroller > div > winnings-page > div > div > div.buttonWrapper > button ';
             if (await page.$(okButton2) !== null) {
-                if (await page.waitForSelector(okButton, {timeout: 2000})) {
-                    await page.click(okButton);
+                if (await page.waitForSelector(okButton2, {timeout: 2000})) {
+                    await this.selectorClick(page, okButton2);
                     await this.timeout(2000);
                     console.log('==============================================================================');
                     console.log('Ok button found after login');
@@ -379,6 +374,11 @@ class App {
 
     async selectorVisible(page, selector) {
         return await page.$(selector) !== null;
+    }
+
+    async selectorClick(page, selector) {
+        await page.$eval(selector, element => element.click());
+        await this.timeout(500);
     }
 
     async timeout(time) {
