@@ -32,27 +32,35 @@ puppeteer.launch({
 }).then(async (browser) => {
     const betclicBet = new App(browser);
     console.log('ready');
-    // betclicBet.addBets(
-    //     [{
-    //         choiceName: '%2%',
-    //         matchName: 'test matchName',
-    //         matchId: '2652243',
-    //         betCode: 'lol',
-    //         guadeloupeDate: 'lol',
-    //         choiceOdd: 'lol',
-    //         maxOdd: 'lol',
-    //     }]
-    // );
+    if (false) {
+        betclicBet.addBets(
+            [{
+                choiceName: '%1%',
+                matchName: 'test matchName',
+                matchId: '2695918',
+                betCode: 'Ftb_Mr3',
+                guadeloupeDate: 'lol',
+                choiceOdd: 'lol',
+                maxOdd: 'lol',
+            }]
+        );
+    }
 
-    const job = new CronJob('0 1,6,11,16,21,26,31,36,41,46,51,56 * * * *', () => {
-        superagent.get(process.env.BET_URL)
-            .then(res => {
-                console.log(res.body);
-                betclicBet.addBets(res.body.matchs);
-            })
-            .catch(err => {
-                console.log('err get matchs', err);
-            });
+    const job = new CronJob('1 11,21,31,41,51 * * * *', () => {
+        try {
+            superagent.get(process.env.BET_URL + "?minutesRange=" + process.env.MINUTES_RANGE)
+                .then(res => {
+                    betclicBet.addBets(res.body.matchs);
+                })
+                .catch(err => {
+                    console.log('err get matchs', err);
+                });
+        } catch (e) {
+            console.log('==============================================================================');
+            console.log('Error when get match to bet on ' + process.env.BET_URL);
+            console.log(e);
+            console.log('==============================================================================');
+        }
     }, null, true, 'UTC');
     job.start();
 });
