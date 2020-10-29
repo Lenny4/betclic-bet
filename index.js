@@ -32,17 +32,19 @@ puppeteer.launch({
 }).then(async (browser) => {
     const betclicBet = new App(browser);
     console.log('ready');
-    // betclicBet.addBets(
-    //     [{
-    //         choiceName: '%2%',
-    //         matchName: 'test matchName',
-    //         matchId: '2652243',
-    //         betCode: 'lol',
-    //         guadeloupeDate: 'lol',
-    //         choiceOdd: 'lol',
-    //         maxOdd: 'lol',
-    //     }]
-    // );
+    if (false) {
+        betclicBet.addBets(
+            [{
+                choiceName: '%2%',
+                matchName: 'test matchName',
+                matchId: '2695303',
+                betCode: 'Ftb_Mr3',
+                guadeloupeDate: 'lol',
+                choiceOdd: 'lol',
+                maxOdd: 'lol',
+            }]
+        );
+    }
 
     const job = new CronJob('1 11,21,31,41,51 * * * *', () => {
         try {
