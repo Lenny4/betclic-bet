@@ -307,7 +307,7 @@ class App {
         console.log('not logging yet, go to login page');
         await this.timeout(1000);
         await this.deletePopUp(page);
-        await page.click(this.loginButton);
+        await page.$eval(this.loginButton, x => x.click());
         const loginFormVisible = page.waitForSelector(this.loginForm, {visible: true});
         await loginFormVisible;
         await this.timeout(500);
@@ -363,20 +363,7 @@ class App {
     }
 
     async isLogin(page) {
-        return await page.evaluate((loginButton) => {
-            const loginButtonEl = $(loginButton);
-            if (!($(loginButtonEl).length >= 1)) {
-                if ($(loginButtonEl).is(':visible')) {
-                    return true;
-                } else {
-                    console.log("Login button not visible");
-                    return false;
-                }
-            } else {
-                console.log("Login button not found");
-                return false;
-            }
-        }, this.loginButton);
+        return !this.selectorVisible(page, this.loginButton);
     }
 
     async deletePopUp(page) {
@@ -384,9 +371,14 @@ class App {
         await page.evaluate((selector) => {
             const elements = document.querySelectorAll(selector);
             for (let i = 0; i < elements.length; i++) {
+                console.log("Pop up deleted");
                 elements[i].parentNode.removeChild(elements[i]);
             }
         }, popUpSelector)
+    }
+
+    async selectorVisible(page, selector) {
+        return await page.$(selector) !== null;
     }
 
     async timeout(time) {
