@@ -6,8 +6,8 @@ class App {
         this.doublons = [];
         this.isBetting = false;
         this.browser = browser;
-        // this.loginButton = '.is-secondary.is-outline.is-small.buttonLink.prebootFreeze.button';
         this.loginButton = 'body > app-desktop > bc-gb-header > header > div > div.buttonWrapper > a';
+        this.profileButton = 'body > app-desktop > bc-gb-header > header > div > a.header_account.prebootFreeze > span';
         this.loginForm = 'login-form';
     }
 
@@ -20,7 +20,6 @@ class App {
             const bet = {
                 betCode: match.betCode,
                 matchName: match.matchName,
-                guadeloupeDate: match.guadeloupeDate,
                 choiceName: match.choiceName,
                 choiceOdd: match.choiceOdd,
                 matchId: match.matchId,
@@ -64,7 +63,7 @@ class App {
         await page.addScriptTag({path: 'lib/jquery-3.4.1.min.js'});
         console.log('page before login');
         page = await this.login(page, url);
-        await this.timeout(5000);
+        await this.timeout(2000);
         console.log('start canBet');
         let r = true;
         if (page.url().includes(bet.matchId)) {
@@ -118,7 +117,7 @@ class App {
             }
             // Vainqueur du match (Basket)
             if (bet.betCode === 'Bkb_Mr6') {
-                const betNameBkb_Mr6 = 'Vainqueur du match';
+                const betNameBkb_Mr6 = 'Vainqueur Match';
                 const indexBetTen_Mr2 = await this.getIndexOfBet(page, betNameBkb_Mr6);
                 if (indexBetTen_Mr2 === null) {
                     console.log('Error : no bet.betName defined for ' + betNameBkb_Mr6);
@@ -136,7 +135,7 @@ class App {
             }
             // Résultat du match (Basket)
             if (bet.betCode === 'Bkb_Mrs') {
-                const betNameBkb_Mrs = 'Résultat du match';
+                const betNameBkb_Mrs = 'Résultat';
                 const indexBetFtb_Mr3 = await this.getIndexOfBet(page, betNameBkb_Mrs);
                 if (indexBetFtb_Mr3 === null) {
                     console.log('Error : no bet.betName defined for ' + betNameBkb_Mrs);
@@ -321,6 +320,7 @@ class App {
         await this.deletePopUp(page);
         await this.selectorClick(page, 'login-page > div > div > div.container_content > div.box > div.box_content > login-form > form > div.buttonWrapper > button');
         await this.timeout(2000);
+        console.log('logging done !');
         try {
             const okButton = '#action';
             if (await page.$(okButton) !== null) {
@@ -330,6 +330,13 @@ class App {
                     console.log('==============================================================================');
                     console.log('Ok button found after login');
                     console.log('==============================================================================');
+                    console.log('page going to ' + returnUrl);
+                    await page.goto(returnUrl, {
+                        waitUntil: ['load', 'networkidle0', 'domcontentloaded', 'networkidle2'],
+                        // Remove the timeout
+                        timeout: 0
+                    });
+                    await page.addScriptTag({path: 'lib/jquery-3.4.1.min.js'});
                 }
             }
             const okButton2 = 'body > app-desktop > div.layout > div > app-content-scroller > div > winnings-page > div > div > div.buttonWrapper > button ';
@@ -347,7 +354,6 @@ class App {
             console.log('button ok not found after logging error');
             console.log('==============================================================================');
         }
-        console.log('logging done !');
         return page;
     }
 
@@ -360,7 +366,7 @@ class App {
     }
 
     async isLogin(page) {
-        return !this.selectorVisible(page, this.loginButton);
+        return !await this.selectorVisible(page, this.loginButton) && await this.selectorVisible(page, this.profileButton);
     }
 
     async deletePopUp(page) {
@@ -375,7 +381,7 @@ class App {
     }
 
     async selectorVisible(page, selector) {
-        return await page.$(selector) !== null;
+        return await page.$(selector) != null;
     }
 
     async selectorClick(page, selector) {
