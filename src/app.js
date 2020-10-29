@@ -14,7 +14,9 @@ class App {
     async addBets(matchs) {
         const now = Math.round(new Date().getTime() / 1000);
         for (let match of matchs) {
-            const doublon = this.doublons.find(x => x.matchId === match.matchId);
+            const doublon = this.doublons.find(x =>
+                x.matchId === match.matchId
+                && x.betCode === match.betCode);
             const bet = {
                 betCode: match.betCode,
                 matchName: match.matchName,
