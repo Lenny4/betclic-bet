@@ -19,6 +19,7 @@ class App {
                 && x.betCode === match.betCode);
             const bet = {
                 betCode: match.betCode,
+                betName: match.betName,
                 matchName: match.matchName,
                 choiceName: match.choiceName,
                 choiceOdd: match.choiceOdd,
@@ -64,17 +65,15 @@ class App {
         console.log('page before login');
         page = await this.login(page, url);
         await this.timeout(2000);
-        console.log('start canBet');
-        let r = true;
+        console.log('start betting');
         if (page.url().includes(bet.matchId)) {
             await this.clearPanier(page);
             let buttonSelector = null;
             // Résultat du match Foot -> %1% ou nul ou %2%
             if (bet.betCode === 'Ftb_Mr3') {
-                const betNameFtb_Mr3 = 'Résultat du match';
-                const indexBetFtb_Mr3 = await this.getIndexOfBet(page, betNameFtb_Mr3);
+                const indexBetFtb_Mr3 = await this.getIndexOfBet(page, bet.betName);
                 if (indexBetFtb_Mr3 === null) {
-                    console.log('Error : no bet.betName defined for ' + betNameFtb_Mr3);
+                    console.log('Error : no bet.betName defined for ' + bet.betName);
                 } else {
                     buttonSelector = 'div.verticalScroller_wrapper > div > div > app-market:nth-child(' + indexBetFtb_Mr3 + ') > div > div.ng-star-inserted > div > div > ';
                     if (bet.choiceName.toLowerCase() === '%1%') {
@@ -84,17 +83,15 @@ class App {
                     } else if (bet.choiceName.toLowerCase() === 'nul') {
                         buttonSelector += 'div:nth-child(2) > app-selection';
                     } else {
-                        r = false;
                         console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
                     }
                 }
             }
             // Vainqueur du match Tennis -> %1% ou %2%
             if (bet.betCode === 'Ten_Mr2') {
-                const betNameTen_Mr2 = 'Vainqueur du match';
-                const indexBetTen_Mr2 = await this.getIndexOfBet(page, betNameTen_Mr2);
+                const indexBetTen_Mr2 = await this.getIndexOfBet(page, bet.betName);
                 if (indexBetTen_Mr2 === null) {
-                    console.log('Error : no bet.betName defined for ' + betNameTen_Mr2);
+                    console.log('Error : no bet.betName defined for ' + bet.betName);
                 } else {
                     buttonSelector = 'div.verticalScroller_wrapper > div > div > app-market:nth-child(' + indexBetTen_Mr2 + ') > div > div.ng-star-inserted > div > div > ';
                     if (bet.choiceName.toLowerCase() === '%1%') {
@@ -102,7 +99,6 @@ class App {
                     } else if (bet.choiceName.toLowerCase() === '%2%') {
                         buttonSelector += 'div:nth-child(2) > app-selection';
                     } else {
-                        r = false;
                         console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
                     }
                 }
@@ -117,10 +113,9 @@ class App {
             }
             // Vainqueur du match (Basket)
             if (bet.betCode === 'Bkb_Mr6') {
-                const betNameBkb_Mr6 = 'Vainqueur Match';
-                const indexBetTen_Mr2 = await this.getIndexOfBet(page, betNameBkb_Mr6);
+                const indexBetTen_Mr2 = await this.getIndexOfBet(page, bet.betName);
                 if (indexBetTen_Mr2 === null) {
-                    console.log('Error : no bet.betName defined for ' + betNameBkb_Mr6);
+                    console.log('Error : no bet.betName defined for ' + bet.betName);
                 } else {
                     buttonSelector = 'div.verticalScroller_wrapper > div > div > app-market:nth-child(' + indexBetTen_Mr2 + ') > div > div.ng-star-inserted > div > div > ';
                     if (bet.choiceName.toLowerCase() === '%1%') {
@@ -128,17 +123,15 @@ class App {
                     } else if (bet.choiceName.toLowerCase() === '%2%') {
                         buttonSelector += 'div:nth-child(2) > app-selection';
                     } else {
-                        r = false;
                         console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
                     }
                 }
             }
             // Résultat du match (Basket)
             if (bet.betCode === 'Bkb_Mrs') {
-                const betNameBkb_Mrs = 'Résultat';
-                const indexBetFtb_Mr3 = await this.getIndexOfBet(page, betNameBkb_Mrs);
+                const indexBetFtb_Mr3 = await this.getIndexOfBet(page, bet.betName);
                 if (indexBetFtb_Mr3 === null) {
-                    console.log('Error : no bet.betName defined for ' + betNameBkb_Mrs);
+                    console.log('Error : no bet.betName defined for ' + bet.betName);
                 } else {
                     buttonSelector = 'div.verticalScroller_wrapper > div > div > app-market:nth-child(' + indexBetFtb_Mr3 + ') > div > div.ng-star-inserted > div > div > ';
                     if (bet.choiceName.toLowerCase() === '%1%') {
@@ -148,51 +141,62 @@ class App {
                     } else if (bet.choiceName.toLowerCase() === 'nul') {
                         buttonSelector += 'div:nth-child(2) > app-selection';
                     } else {
-                        r = false;
                         console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
                     }
                 }
             }
-            if (r && buttonSelector !== null) {
-                try {
-                    console.log('click on odd ...');
-                    if (await page.$(buttonSelector) === null) {
-                        await this.timeout(5000);
-                    }
-                    await this.selectorClick(page, buttonSelector);
-                } catch (e) {
-                    await page.screenshot({path: bet.matchName + '_click_odd.png', fullPage: true});
-                    await this.logError(e);
+            if (buttonSelector == null) {
+                this.endBetting(page);
+                return;
+            }
+            const oddValue = parseFloat((await this.getTextFromSelector(page, buttonSelector)).trim().replace(',', '.'));
+            if (oddValue > bet.maxOdd) {
+                console.log('Odd value ' + oddValue + ' to bet is greater than max odd ' + bet.maxOdd);
+                this.endBetting(page);
+                return;
+            }
+            try {
+                console.log('click on odd ...');
+                if (await page.$(buttonSelector) === null) {
+                    await this.timeout(5000);
                 }
-                try {
-                    console.log('enter amount ...');
-                    await page.type('app-betting-slip-single-bet-item-footer > div > div > app-bs-stake > div > input', process.env.AMOUNT_BET);
-                    await this.timeout(500);
-                } catch (e) {
-                    await this.logError(e);
-                }
-                if (await page.$('bc-gb-cookie-banner > div > div > button') !== null) {
-                    console.log('click remove cookie ...');
-                    await this.selectorClick(page, 'bc-gb-cookie-banner > div > div > button');
-                }
-                try {
-                    console.log('click on bet button ...');
-                    await this.selectorClick(page, '#betBtn');
-                    await this.timeout(2000);
-                } catch (e) {
-                    await this.logError(e);
-                }
-                const closeConfirmationBetButton = '#closeBetConfirmation';
-                if (await page.$(closeConfirmationBetButton) !== null) {
-                    console.log('click on close confirmation bet ...');
-                    await this.selectorClick(page, closeConfirmationBetButton);
-                } else {
-                    await this.logError('button close confirmation bet not found');
-                }
+                await this.selectorClick(page, buttonSelector);
+            } catch (e) {
+                await page.screenshot({path: bet.matchName + '_click_odd.png', fullPage: true});
+                await this.logError(e);
+            }
+            try {
+                console.log('enter amount ...');
+                await page.type('app-betting-slip-single-bet-item-footer > div > div > app-bs-stake > div > input', process.env.AMOUNT_BET);
+                await this.timeout(500);
+            } catch (e) {
+                await this.logError(e);
+            }
+            if (await page.$('bc-gb-cookie-banner > div > div > button') !== null) {
+                console.log('click remove cookie ...');
+                await this.selectorClick(page, 'bc-gb-cookie-banner > div > div > button');
+            }
+            try {
+                console.log('click on bet button ...');
+                await this.selectorClick(page, '#betBtn');
+                await this.timeout(2000);
+            } catch (e) {
+                await this.logError(e);
+            }
+            const closeConfirmationBetButton = '#closeBetConfirmation';
+            if (await page.$(closeConfirmationBetButton) !== null) {
+                console.log('click on close confirmation bet ...');
+                await this.selectorClick(page, closeConfirmationBetButton);
+            } else {
+                await this.logError('button close confirmation bet not found');
             }
         } else {
             console.log(bet.matchName + ' is not available on betclic : ' + page.url());
         }
+        this.endBetting(page);
+    }
+
+    async endBetting(page) {
         this.bets.splice(0, 1);
         await this.timeout(2000);
         await this.clearPanier(page);

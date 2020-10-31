@@ -37,11 +37,11 @@ puppeteer.launch({
             [{
                 choiceName: '%1%',
                 matchName: 'test matchName',
-                matchId: '2695918',
+                matchId: '2717046',
                 betCode: 'Ftb_Mr3',
-                guadeloupeDate: 'lol',
-                choiceOdd: 'lol',
-                maxOdd: 'lol',
+                betName: 'RÉSULTAT DU MATCH',
+                choiceOdd: '3.82',
+                maxOdd: '3.10',
             }]
         );
     }
