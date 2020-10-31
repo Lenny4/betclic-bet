@@ -64,7 +64,6 @@ class App {
         await page.addScriptTag({path: 'lib/jquery-3.4.1.min.js'});
         console.log('page before login');
         page = await this.login(page, url);
-        await this.timeout(2000);
         console.log('start betting');
         if (page.url().includes(bet.matchId)) {
             await this.clearPanier(page);
@@ -116,8 +115,7 @@ class App {
             }
             try {
                 console.log('enter amount ...');
-                await page.type('app-betting-slip-single-bet-item-footer > div > div > app-bs-stake > div > input', process.env.AMOUNT_BET);
-                await this.timeout(500);
+                await this.selectorTypeValue(page,'app-betting-slip-single-bet-item-footer > div > div > app-bs-stake > div > input', process.env.AMOUNT_BET);
             } catch (e) {
                 await this.logError(e);
             }
@@ -296,31 +294,21 @@ class App {
         await this.timeout(1000);
         await this.deletePopUp(page);
         await this.selectorClick(page, this.loginButton);
-        const loginFormVisible = page.waitForSelector(this.loginForm, {visible: true});
-        await loginFormVisible;
-        const loginSelector = '#loginPage_username > input';
-        await this.deleteInputValue(page, loginSelector);
-        await page.type(loginSelector, process.env.LOGIN_USERNAME);
-        await this.timeout(500);
-        const passwordSelector = '#loginpage_password > input';
-        await this.deleteInputValue(page, passwordSelector);
-        await page.type(passwordSelector, process.env.LOGIN_PASSWORD);
-        await this.timeout(500);
-        await page.type('#date', process.env.LOGIN_DAY + process.env.LOGIN_MONTH + process.env.LOGIN_YEAR);
-        await this.timeout(500);
+        await page.waitForSelector(this.loginForm, {visible: true});
+        await this.selectorTypeValue(page, '#loginPage_username > input', process.env.LOGIN_USERNAME);
+        await this.selectorTypeValue(page, '#loginpage_password > input', process.env.LOGIN_PASSWORD);
+        await this.selectorTypeValue(page, '#date', process.env.LOGIN_DAY + process.env.LOGIN_MONTH + process.env.LOGIN_YEAR);
         await this.deletePopUp(page);
         await this.selectorClick(page, 'login-page > div > div > div.container_content > div.box > div.box_content > login-form > form > div.buttonWrapper > button');
-        await this.timeout(2000);
         console.log('logging done !');
+        await this.timeout(2000);
         try {
             const okButton = '#action';
             if (await page.$(okButton) !== null) {
                 if (await page.waitForSelector(okButton, {timeout: 2000})) {
                     await this.selectorClick(page, okButton);
                     await this.timeout(2000);
-                    console.log('==============================================================================');
                     console.log('Ok button found after login');
-                    console.log('==============================================================================');
                     console.log('page going to ' + returnUrl);
                     await page.goto(returnUrl, {
                         waitUntil: ['load', 'networkidle0', 'domcontentloaded', 'networkidle2'],
@@ -335,9 +323,7 @@ class App {
                 if (await page.waitForSelector(okButton2, {timeout: 2000})) {
                     await this.selectorClick(page, okButton2);
                     await this.timeout(2000);
-                    console.log('==============================================================================');
                     console.log('Ok button found after login');
-                    console.log('==============================================================================');
                 }
             }
         } catch (e) {
@@ -346,14 +332,6 @@ class App {
             console.log('==============================================================================');
         }
         return page;
-    }
-
-    async deleteInputValue(page, selector) {
-        await page.focus(selector);
-        await page.keyboard.down('Control');
-        await page.keyboard.press('A');
-        await page.keyboard.up('Control');
-        await page.keyboard.press('Backspace');
     }
 
     async isLogin(page) {
@@ -378,6 +356,20 @@ class App {
     async selectorClick(page, selector) {
         await page.$eval(selector, element => element.click());
         await this.timeout(500);
+    }
+
+    async selectorTypeValue(page, selector, value) {
+        await this.deleteInputValue(page, selector);
+        await page.type(selector, value);
+        await this.timeout(500);
+    }
+
+    async deleteInputValue(page, selector) {
+        await page.focus(selector);
+        await page.keyboard.down('Control');
+        await page.keyboard.press('A');
+        await page.keyboard.up('Control');
+        await page.keyboard.press('Backspace');
     }
 
     async timeout(time) {
