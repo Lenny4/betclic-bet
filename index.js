@@ -37,11 +37,11 @@ puppeteer.launch({
             [{
                 choiceName: '%1%',
                 matchName: 'test matchName',
-                matchId: '2717046',
+                matchId: '2556677',
                 betCode: 'Ftb_Mr3',
-                betName: 'RÉSULTAT DU MATCH',
-                choiceOdd: '3.82',
-                maxOdd: '3.10',
+                betName: 'Résultat du match',
+                choiceOdd: 1.67,
+                maxOdd: 2.054,
             }]
         );
     }
