@@ -37,16 +37,16 @@ puppeteer.launch({
             [{
                 choiceName: '%1%',
                 matchName: 'test matchName',
-                matchId: '2556677',
+                matchId: '2617894',
                 betCode: 'Ftb_Mr3',
                 betName: 'Résultat du match',
                 choiceOdd: 1.67,
-                maxOdd: 2.054,
+                maxOdd: 20.054,
             }]
         );
     }
 
-    const job = new CronJob('1 11,21,31,41,51 * * * *', () => {
+    const job = new CronJob('1 1,11,21,31,41,51 * * * *', () => {
         try {
             superagent.get(process.env.BET_URL + "?minutesRange=" + process.env.MINUTES_RANGE)
                 .then(res => {
