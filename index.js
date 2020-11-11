@@ -42,13 +42,15 @@ puppeteer.launch({
                 betName: 'Résultat du match',
                 choiceOdd: 1.67,
                 maxOdd: 20.054,
+                amountToWin: 2.3,
+                serieId: 16
             }]
         );
     }
 
     const job = new CronJob('1 1,11,21,31,41,51 * * * *', () => {
         try {
-            superagent.get(process.env.BET_URL + "?minutesRange=" + process.env.MINUTES_RANGE)
+            superagent.get(process.env.URL_GET_BET_MARTINGALE + "?minutesRange=" + process.env.MINUTES_RANGE)
                 .then(res => {
                     betclicBet.addBets(res.body.matchs);
                 })

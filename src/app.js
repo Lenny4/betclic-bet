@@ -1,4 +1,5 @@
 const clone = require('clone');
+const superagent = require('superagent');
 
 class App {
     constructor(browser) {
@@ -25,6 +26,8 @@ class App {
                 choiceOdd: match.choiceOdd,
                 matchId: match.matchId,
                 maxOdd: match.maxOdd,
+                amountToWin: match.amountToWin,
+                serieId: match.serieId,
                 time: now,
                 try: 0,
             };
@@ -113,9 +116,10 @@ class App {
                 await page.screenshot({path: bet.matchName + '_click_odd.png', fullPage: true});
                 await this.logError(e);
             }
+            let amountToBet = this.getAmountToBet(bet.amountToWin, oddValue);
             try {
-                console.log('enter amount ...');
-                await this.selectorTypeValue(page,'app-betting-slip-single-bet-item-footer > div > div > app-bs-stake > div > input', process.env.AMOUNT_BET);
+                console.log('enter amount ...' + amountToBet);
+                await this.selectorTypeValue(page, 'app-betting-slip-single-bet-item-footer > div > div > app-bs-stake > div > input', amountToBet);
             } catch (e) {
                 await this.logError(e);
             }
@@ -134,8 +138,16 @@ class App {
             if (await page.$(closeConfirmationBetButton) !== null) {
                 console.log('click on close confirmation bet ...');
                 await this.selectorClick(page, closeConfirmationBetButton);
+                this.sendBetToServer(bet.serieId, amountToBet, oddValue);
             } else {
                 await this.logError('button close confirmation bet not found');
+            }
+            try {
+                this.sendBetToServer(bet.serieId, amountToBet, oddValue);
+            } catch (e) {
+                console.log('==============================================================================');
+                console.log("Erreur lors de l'envoi au serveur" + e);
+                console.log('==============================================================================');
             }
         } else {
             console.log(bet.matchName + ' is not available on betclic : ' + page.url());
@@ -360,7 +372,7 @@ class App {
 
     async selectorTypeValue(page, selector, value) {
         await this.deleteInputValue(page, selector);
-        await page.type(selector, value);
+        await page.type(selector, value.toString());
         await this.timeout(500);
     }
 
@@ -378,6 +390,37 @@ class App {
                 resolve();
             }, time);
         });
+    }
+
+    getAmountToBet(amountToWin, odd) {
+        let amountToBet = amountToWin / odd;
+        if (amountToBet < 0.1) {
+            return 0.1
+        }
+        return Math.round((amountToBet + Number.EPSILON) * 100) / 100;
+    }
+
+    sendBetToServer(serieId, amountBet, odd) {
+        let body = {
+            "serieId": serieId,
+            "odd": odd,
+            "amount": amountBet
+        };
+        try {
+            superagent.post(process.env.URL_SEND_BET_MARTINGALE)
+                .send(body)
+                .then(res => {
+                    console.log(res.body);
+                })
+                .catch(err => {
+                    console.log('Error when send bet to server', err);
+                });
+        } catch (e) {
+            console.log('==============================================================================');
+            console.log('Error when send bet to server');
+            console.log(e);
+            console.log('==============================================================================');
+        }
     }
 }
 
