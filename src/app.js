@@ -386,7 +386,7 @@ class App {
     }
 
     getAmountToBet(amountToWin, odd) {
-        let amountToBet = (amountToWin / odd - 1);
+        let amountToBet = amountToWin / (odd - 1);
         if (amountToBet < 0.1) {
             return 0.1
         }
