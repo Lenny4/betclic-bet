@@ -43,7 +43,7 @@ puppeteer.launch({
                 choiceOdd: 1.67,
                 maxOdd: 20.054,
                 amountToWin: 2.3,
-                serieId: 16
+                betActionSerieId: 16
             }]
         );
     }

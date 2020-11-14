@@ -27,7 +27,7 @@ class App {
                 matchId: match.matchId,
                 maxOdd: match.maxOdd,
                 amountToWin: match.amountToWin,
-                serieId: match.serieId,
+                betActionSerieId: match.betActionSerieId,
                 time: now,
                 try: 0,
             };
@@ -138,7 +138,7 @@ class App {
             if (await page.$(closeConfirmationBetButton) !== null) {
                 console.log('click on close confirmation bet ...');
                 await this.selectorClick(page, closeConfirmationBetButton);
-                this.sendBetToServer(bet.serieId, amountToBet, oddValue);
+                this.sendBetToServer(bet.betActionSerieId, amountToBet, oddValue);
             } else {
                 await this.logError('button close confirmation bet not found');
             }
@@ -393,9 +393,9 @@ class App {
         return Math.round((amountToBet + Number.EPSILON) * 100) / 100;
     }
 
-    sendBetToServer(serieId, amountBet, odd) {
+    sendBetToServer(betActionSerieId, amountBet, odd) {
         let body = {
-            "serieId": serieId,
+            "betActionSerieId": betActionSerieId,
             "odd": odd,
             "amount": amountBet
         };
