@@ -103,6 +103,7 @@ class App {
             const oddValue = parseFloat((await this.getTextFromSelector(page, buttonSelector)).trim().replace(',', '.'));
             if (oddValue > bet.maxOdd) {
                 console.log('Odd value ' + oddValue + ' to bet is greater than max odd ' + bet.maxOdd);
+                this.sendBetToServer(bet.betActionSerieId, amountToBet, oddValue, true);
                 this.endBetting(page);
                 return;
             }
@@ -138,7 +139,7 @@ class App {
             if (await page.$(closeConfirmationBetButton) !== null) {
                 console.log('click on close confirmation bet ...');
                 await this.selectorClick(page, closeConfirmationBetButton);
-                this.sendBetToServer(bet.betActionSerieId, amountToBet, oddValue);
+                this.sendBetToServer(bet.betActionSerieId, amountToBet, oddValue, false);
             } else {
                 await this.logError('button close confirmation bet not found');
             }
@@ -393,11 +394,12 @@ class App {
         return Math.round((amountToBet + Number.EPSILON) * 100) / 100;
     }
 
-    sendBetToServer(betActionSerieId, amountBet, odd) {
+    sendBetToServer(betActionSerieId, amountBet, odd, canceled) {
         let body = {
             "betActionSerieId": betActionSerieId,
             "odd": odd,
-            "amount": amountBet
+            "amount": amountBet,
+            "cancel": canceled,
         };
         try {
             superagent.post(process.env.URL_SEND_BET_MARTINGALE)
