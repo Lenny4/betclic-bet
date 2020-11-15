@@ -97,6 +97,7 @@ class App {
             }
             if (buttonSelector == null) {
                 console.log("Le paris n'a pas été trouvé");
+                this.sendBetToServer(bet.betActionSerieId, amountToBet, oddValue, true);
                 this.endBetting(page);
                 return;
             }
@@ -144,6 +145,7 @@ class App {
                 await this.logError('button close confirmation bet not found');
             }
         } else {
+            this.sendBetToServer(bet.betActionSerieId, amountToBet, oddValue, true);
             console.log(bet.matchName + ' is not available on betclic : ' + page.url());
         }
         this.endBetting(page);
