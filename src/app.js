@@ -237,7 +237,7 @@ class App {
         for (let index = 0; index < 10; index++) {
             const selectorTmp = 'div.verticalScroller_wrapper > div > div > app-market:nth-child(' + index + ') > div >  div.marketBox_head > h2';
             const betNameTmp = (await this.getTextFromSelector(page, selectorTmp)).trim();
-            if (betName.toLowerCase() === betNameTmp.toLowerCase()) {
+            if (betName.toLowerCase().trim() === betNameTmp.toLowerCase()) {
                 return index;
             }
         }
