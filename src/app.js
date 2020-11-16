@@ -95,6 +95,22 @@ class App {
             if (bet.betCode === 'Bkb_Mrs') {
                 buttonSelector = await this.getResultSelectorToBet(page, bet.betName, bet.choiceName);
             }
+            // Vainqueur du match (Volley)
+            if (bet.betCode === 'Vlb_Mr2') {
+                buttonSelector = await this.getWinnerSelectorToBet(page, bet.betName, bet.choiceName);
+            }
+            // Vainqueur du match (Snooker)
+            if (bet.betCode === 'Snk_Mr2') {
+                buttonSelector = await this.getWinnerSelectorToBet(page, bet.betName, bet.choiceName);
+            }
+            // Résultat (Hockey)
+            if (bet.betCode === 'Ihk_Mrs') {
+                buttonSelector = await this.getResultSelectorToBet(page, bet.betName, bet.choiceName);
+            }
+            // Résultat (Rugby)
+            if (bet.betCode === 'Rgb_Mr3') {
+                buttonSelector = await this.getResultSelectorToBet(page, bet.betName, bet.choiceName);
+            }
             if (buttonSelector == null) {
                 console.log("Le paris n'a pas été trouvé");
                 this.sendBetToServer(bet.betActionSerieId, amountToBet, oddValue, true);
