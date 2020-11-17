@@ -113,11 +113,12 @@ class App {
             }
             if (buttonSelector == null) {
                 console.log("Le paris n'a pas été trouvé");
-                this.sendBetToServer(bet.betActionSerieId, amountToBet, oddValue, true);
+                this.sendBetToServer(bet.betActionSerieId, 0, 0, true);
                 this.endBetting(page);
                 return;
             }
             const oddValue = parseFloat((await this.getTextFromSelector(page, buttonSelector)).trim().replace(',', '.'));
+            let amountToBet = this.getAmountToBet(bet.amountToWin, oddValue);
             if (oddValue > bet.maxOdd) {
                 console.log('Odd value ' + oddValue + ' to bet is greater than max odd ' + bet.maxOdd);
                 this.sendBetToServer(bet.betActionSerieId, amountToBet, oddValue, true);
@@ -134,7 +135,6 @@ class App {
                 await page.screenshot({path: bet.matchName + '_click_odd.png', fullPage: true});
                 await this.logError(e);
             }
-            let amountToBet = this.getAmountToBet(bet.amountToWin, oddValue);
             try {
                 console.log('enter amount ...' + amountToBet);
                 await this.selectorTypeValue(page, 'app-betting-slip-single-bet-item-footer > div > div > app-bs-stake > div > input', amountToBet);
