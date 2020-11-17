@@ -355,6 +355,7 @@ class App {
             console.log('button ok not found after logging error');
             console.log('==============================================================================');
         }
+        await this.timeout(2000);
         return page;
     }
 
