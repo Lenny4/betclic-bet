@@ -161,7 +161,7 @@ class App {
                 await this.logError('button close confirmation bet not found');
             }
         } else {
-            this.sendBetToServer(bet.betActionSerieId, amountToBet, oddValue, true);
+            this.sendBetToServer(bet.betActionSerieId, 0, 0, true);
             console.log(bet.matchName + ' is not available on betclic : ' + page.url());
         }
         this.endBetting(page);
