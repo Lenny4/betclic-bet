@@ -122,6 +122,12 @@ class App {
                 return;
             }
             const oddValue = parseFloat((await this.getTextFromSelector(page, buttonSelector)).trim().replace(',', '.'));
+            if(oddValue < 1.1) {
+                console.log('Impossible de parier sur une côte inférieure à 1.1 sur betclic');
+                this.sendBetToServer(bet.betActionSerieId, 0, oddValue, true);
+                this.endBetting(page);
+                return;
+            }
             let amountToBet = this.getAmountToBet(bet.amountToWin, oddValue);
             if (oddValue > bet.maxOdd) {
                 console.log('Odd value ' + oddValue + ' to bet is greater than max odd ' + bet.maxOdd);
