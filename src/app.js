@@ -83,6 +83,10 @@ class App {
             if (bet.betCode === 'Ten_Set') {
                 buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
             }
+            // Score exact du 1er set Tennis
+            if (bet.betCode === 'Ten_Cs1') {
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
+            }
             // Baseball nombre total de run
             if (bet.betCode === 'Bsb_Trn') {
                 buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
@@ -223,6 +227,10 @@ class App {
             console.log('Error : no bet.betName defined for ' + betName);
         } else {
             buttonSelector = 'div.verticalScroller_wrapper > div > div > app-market:nth-child(' + indexBet + ') > div';
+            let showMorebuttonSelector = buttonSelector + ' > div.ng-star-inserted > div > div.seeMoreButton';
+            if (await page.$(showMorebuttonSelector) !== null) {
+                await this.selectorClick(page, showMorebuttonSelector);
+            }
             const indexChoice = await this.getIndexOfChoice(page, buttonSelector, choiceName);
             if (indexChoice === null) {
                 console.log('Error : no bet.choiceName defined for ' + choiceName);
