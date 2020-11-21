@@ -169,6 +169,7 @@ class App {
                 this.sendBetToServer(bet.betActionSerieId, amountToBet, oddValue, false);
             } else {
                 await this.logError('button close confirmation bet not found');
+                this.sendBetToServer(bet.betActionSerieId, amountToBet, oddValue, true);
             }
         } else {
             this.sendBetToServer(bet.betActionSerieId, 0, 0, true);
