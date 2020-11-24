@@ -197,9 +197,9 @@ class App {
         } else {
             buttonSelector = 'div.verticalScroller_wrapper > div > div > app-market:nth-child(' + indexBet + ') > div > div.ng-star-inserted > div > div > ';
             if (choiceName.toLowerCase() === '%1%') {
-                buttonSelector += 'div:nth-child(1) > app-selection';
+                buttonSelector += 'div:nth-child(1) > sports-selections-selection';
             } else if (choiceName.toLowerCase() === '%2%') {
-                buttonSelector += 'div:nth-child(2) > app-selection';
+                buttonSelector += 'div:nth-child(2) > sports-selections-selection';
             } else {
                 console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
             }
@@ -215,11 +215,11 @@ class App {
         } else {
             buttonSelector = 'div.verticalScroller_wrapper > div > div > app-market:nth-child(' + indexBet + ') > div > div.ng-star-inserted > div > div > ';
             if (choiceName.toLowerCase() === '%1%') {
-                buttonSelector += 'div:nth-child(1) > app-selection';
+                buttonSelector += 'div:nth-child(1) > sports-selections-selection';
             } else if (choiceName.toLowerCase() === '%2%') {
-                buttonSelector += 'div:nth-child(3) > app-selection';
+                buttonSelector += 'div:nth-child(3) > sports-selections-selection';
             } else if (choiceName.toLowerCase() === 'nul') {
-                buttonSelector += 'div:nth-child(2) > app-selection';
+                buttonSelector += 'div:nth-child(2) > sports-selections-selection';
             } else {
                 console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
             }
@@ -242,7 +242,7 @@ class App {
             if (indexChoice === null) {
                 console.log('Error : no bet.choiceName defined for ' + choiceName);
             } else {
-                buttonSelector += ' > div.ng-star-inserted > div > div > div:nth-child(' + indexChoice + ') > app-selection';
+                buttonSelector += ' > div.ng-star-inserted > div > div > div:nth-child(' + indexChoice + ') > sports-selections-selection';
             }
         }
         return buttonSelector;
