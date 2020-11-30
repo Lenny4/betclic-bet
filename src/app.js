@@ -127,6 +127,10 @@ class App {
             if (bet.betCode === 'Rgb_Mr3') {
                 buttonSelector = await this.getResultSelectorToBet(page, bet.betName, bet.choiceName);
             }
+            // Résultat (Hand-ball)
+            if (bet.betCode === 'Hdb_Mr2') {
+                buttonSelector = await this.getResultSelectorToBet(page, bet.betName, bet.choiceName);
+            }
             if (buttonSelector == null) {
                 console.log("Le paris n'a pas été trouvé");
                 this.sendBetToServer(bet.betActionSerieId, 0, 0, true);
