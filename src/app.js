@@ -75,6 +75,14 @@ class App {
             if (bet.betCode === 'Ftb_Mr3') {
                 buttonSelector = await this.getResultSelectorToBet(page, bet.betName, bet.choiceName);
             }
+            // But pour les 2 équipes -> Oui ou Non
+            if (bet.betCode === 'Ftb_Bts') {
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
+            }
+            // Nombre total de but
+            if (bet.betCode === 'Ftb_10') {
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
+            }
             // Vainqueur du match Tennis -> %1% ou %2%
             if (bet.betCode === 'Ten_Mr2') {
                 buttonSelector = await this.getWinnerSelectorToBet(page, bet.betName, bet.choiceName);
@@ -110,6 +118,10 @@ class App {
             // Résultat (Hockey)
             if (bet.betCode === 'Ihk_Mrs') {
                 buttonSelector = await this.getResultSelectorToBet(page, bet.betName, bet.choiceName);
+            }
+            // Nombre total de but
+            if (bet.betCode === 'Ihk_TglM') {
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
             }
             // Résultat (Rugby)
             if (bet.betCode === 'Rgb_Mr3') {
