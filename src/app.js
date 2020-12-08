@@ -437,35 +437,11 @@ class App {
     }
 
     getAmountToBet(amountToWin, odd) {
-        let amountToBet = amountToWin / (odd - 1);
-        if (amountToBet < 0.1) {
-            return 0.1
-        }
-        return Math.round((amountToBet + Number.EPSILON) * 100) / 100;
+        return process.env.AMOUNT_BET;
     }
 
     sendBetToServer(betActionSerieId, amountBet, odd, canceled) {
-        let body = {
-            "betActionSerieId": betActionSerieId,
-            "odd": odd,
-            "amount": amountBet,
-            "cancel": canceled,
-        };
-        try {
-            superagent.post(process.env.URL_SEND_BET_MARTINGALE)
-                .send(body)
-                .then(res => {
-                    console.log(res.body);
-                })
-                .catch(err => {
-                    console.log('Error when send bet to server', err);
-                });
-        } catch (e) {
-            console.log('==============================================================================');
-            console.log('Error when send bet to server');
-            console.log(e);
-            console.log('==============================================================================');
-        }
+        // Nothing to send to server
     }
 }
 

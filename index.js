@@ -50,7 +50,7 @@ puppeteer.launch({
 
     const job = new CronJob('1 1,11,21,31,41,51 * * * *', () => {
         try {
-            superagent.get(process.env.URL_GET_BET_MARTINGALE + "?minutesRange=" + process.env.MINUTES_RANGE)
+            superagent.get(process.env.BET_URL + "?minutesRange=" + process.env.MINUTES_RANGE)
                 .then(res => {
                     betclicBet.addBets(res.body.matchs);
                 })
