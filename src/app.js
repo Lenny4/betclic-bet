@@ -107,6 +107,10 @@ class App {
             if (bet.betCode === 'Bkb_Mrs') {
                 buttonSelector = await this.getResultSelectorToBet(page, bet.betName, bet.choiceName);
             }
+            // Nombre total de points (Bkb_Tpt)
+            if (bet.betCode === 'Bkb_Mrs') {
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
+            }
             // Vainqueur du match (Volley)
             if (bet.betCode === 'Vlb_Mr2') {
                 buttonSelector = await this.getWinnerSelectorToBet(page, bet.betName, bet.choiceName);
@@ -123,9 +127,17 @@ class App {
             if (bet.betCode === 'Ihk_TglM') {
                 buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
             }
+            // Vainqueur du match
+            if (bet.betCode === 'Ihk_Mnl') {
+                buttonSelector = await this.getWinnerSelectorToBet(page, bet.betName, bet.choiceName);
+            }
             // Résultat (Rugby)
             if (bet.betCode === 'Rgb_Mr3') {
                 buttonSelector = await this.getResultSelectorToBet(page, bet.betName, bet.choiceName);
+            }
+            // Nombre de points (Rugby)
+            if (bet.betCode === 'Rgb_Tpt') {
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
             }
             // Résultat (Hand-ball)
             if (bet.betCode === 'Hdb_Mr2') {
