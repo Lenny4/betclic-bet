@@ -226,9 +226,9 @@ class App {
         } else {
             buttonSelector = this.listBetSelector + '(' + indexBet + ') > div > sports-markets-single-market-selections-group > div > ';
             if (choiceName.toLowerCase() === '%1%') {
-                buttonSelector += 'div:nth-child(1) > sports-selections-selection';
+                buttonSelector += 'div:nth-child(1) > sports-selections-selection > div > span';
             } else if (choiceName.toLowerCase() === '%2%') {
-                buttonSelector += 'div:nth-child(2) > sports-selections-selection';
+                buttonSelector += 'div:nth-child(2) > sports-selections-selection > div > span';
             } else {
                 console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
             }
@@ -244,11 +244,11 @@ class App {
         } else {
             buttonSelector = this.listBetSelector + '(' + indexBet + ') > div > sports-markets-single-market-selections-group > div > ';
             if (choiceName.toLowerCase() === '%1%') {
-                buttonSelector += 'div:nth-child(1) > sports-selections-selection';
+                buttonSelector += 'div:nth-child(1) > sports-selections-selection > div > span';
             } else if (choiceName.toLowerCase() === '%2%') {
-                buttonSelector += 'div:nth-child(3) > sports-selections-selection';
+                buttonSelector += 'div:nth-child(3) > sports-selections-selection > div > span';
             } else if (choiceName.toLowerCase() === 'nul') {
-                buttonSelector += 'div:nth-child(2) > sports-selections-selection';
+                buttonSelector += 'div:nth-child(2) > sports-selections-selection > div > span';
             } else {
                 console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
             }
@@ -271,7 +271,7 @@ class App {
             if (indexChoice === null) {
                 console.log('Error : no bet.choiceName defined for ' + choiceName);
             } else {
-                buttonSelector += ' > sports-markets-single-market-selections-group > div.marketBox_body.is-2col.ng-star-inserted > div:nth-child(' + indexChoice + ') > sports-selections-selection';
+                buttonSelector += ' > sports-markets-single-market-selections-group > div.marketBox_body.is-2col.ng-star-inserted > div:nth-child(' + indexChoice + ') > sports-selections-selection > div > span';
             }
         }
         return buttonSelector;
