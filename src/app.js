@@ -10,6 +10,7 @@ class App {
         this.loginButton = 'body > app-desktop > bc-gb-header > header > div > div.buttonWrapper > a';
         this.profileButton = 'body > app-desktop > bc-gb-header > header > div > a.header_account.prebootFreeze > span';
         this.loginForm = 'login-form';
+        this.listBetSelector = 'div.verticalScroller_wrapper > div > div > sports-markets-single-market:nth-child';
     }
 
     async addBets(matchs) {
@@ -108,7 +109,7 @@ class App {
                 buttonSelector = await this.getResultSelectorToBet(page, bet.betName, bet.choiceName);
             }
             // Nombre total de points (Bkb_Tpt)
-            if (bet.betCode === 'Bkb_Mrs') {
+            if (bet.betCode === 'Bkb_Tpt') {
                 buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
             }
             // Vainqueur du match (Volley)
@@ -175,7 +176,7 @@ class App {
             }
             try {
                 console.log('enter amount ...' + amountToBet);
-                await this.selectorTypeValue(page, 'app-betting-slip-single-bet-item-footer > div > div > app-bs-stake > div > input', amountToBet);
+                await this.selectorTypeValue(page, 'app-betting-slip-single-bet-item > div > app-betting-slip-single-bet-item-footer > div > div > app-bs-stake > div > input', amountToBet);
             } catch (e) {
                 await this.logError(e);
             }
@@ -223,7 +224,7 @@ class App {
         if (indexBet === null) {
             console.log('Error : no bet.betName defined for ' + betName);
         } else {
-            buttonSelector = 'div.verticalScroller_wrapper > div > div > app-market:nth-child(' + indexBet + ') > div > div.ng-star-inserted > div > div > ';
+            buttonSelector = this.listBetSelector + '(' + indexBet + ') > div > sports-markets-single-market-selections-group > div > ';
             if (choiceName.toLowerCase() === '%1%') {
                 buttonSelector += 'div:nth-child(1) > sports-selections-selection';
             } else if (choiceName.toLowerCase() === '%2%') {
@@ -241,7 +242,7 @@ class App {
         if (indexBet === null) {
             console.log('Error : no bet.betName defined for ' + betName);
         } else {
-            buttonSelector = 'div.verticalScroller_wrapper > div > div > app-market:nth-child(' + indexBet + ') > div > div.ng-star-inserted > div > div > ';
+            buttonSelector = this.listBetSelector + '(' + indexBet + ') > div > sports-markets-single-market-selections-group > div > ';
             if (choiceName.toLowerCase() === '%1%') {
                 buttonSelector += 'div:nth-child(1) > sports-selections-selection';
             } else if (choiceName.toLowerCase() === '%2%') {
@@ -261,8 +262,8 @@ class App {
         if (indexBet === null) {
             console.log('Error : no bet.betName defined for ' + betName);
         } else {
-            buttonSelector = 'div.verticalScroller_wrapper > div > div > app-market:nth-child(' + indexBet + ') > div';
-            let showMorebuttonSelector = buttonSelector + ' > div.ng-star-inserted > div > div.seeMoreButton';
+            buttonSelector = this.listBetSelector + '(' + indexBet + ') > div';
+            let showMorebuttonSelector = buttonSelector + ' > sports-markets-single-market-selections-group > div.seeMoreButton.prebootFreeze.ng-star-inserted';
             if (await page.$(showMorebuttonSelector) !== null) {
                 await this.selectorClick(page, showMorebuttonSelector);
             }
@@ -270,7 +271,7 @@ class App {
             if (indexChoice === null) {
                 console.log('Error : no bet.choiceName defined for ' + choiceName);
             } else {
-                buttonSelector += ' > div.ng-star-inserted > div > div > div:nth-child(' + indexChoice + ') > sports-selections-selection';
+                buttonSelector += ' > sports-markets-single-market-selections-group > div.marketBox_body.is-2col.ng-star-inserted > div:nth-child(' + indexChoice + ') > sports-selections-selection';
             }
         }
         return buttonSelector;
@@ -278,7 +279,7 @@ class App {
 
     async getIndexOfBet(page, betName) {
         for (let index = 0; index < 10; index++) {
-            const selectorTmp = 'div.verticalScroller_wrapper > div > div > app-market:nth-child(' + index + ') > div >  div.marketBox_head > h2';
+            const selectorTmp = this.listBetSelector + '(' + index + ') > div >  div.marketBox_head > h2';
             const betNameTmp = (await this.getTextFromSelector(page, selectorTmp)).trim();
             if (betName.toLowerCase().trim() === betNameTmp.toLowerCase()) {
                 return index;
@@ -289,7 +290,7 @@ class App {
 
     async getIndexOfChoice(page, selector, choiceName) {
         for (let index = 0; index < 20; index++) {
-            const selectorTmp = selector + ' > div.ng-star-inserted > div > div > div:nth-child(' + index + ') > p';
+            const selectorTmp = selector + ' > sports-markets-single-market-selections-group > div.marketBox_body.is-2col.ng-star-inserted > div:nth-child(' + index + ') > p';
             const choiceNameTmp = (await this.getTextFromSelector(page, selectorTmp)).trim();
             if (choiceNameTmp.toLowerCase() === choiceName.toLowerCase()) {
                 return index;
