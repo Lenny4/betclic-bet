@@ -1,4 +1,5 @@
 const clone = require('clone');
+const superagent = require('superagent');
 
 class App {
     constructor(browser) {
@@ -9,6 +10,7 @@ class App {
         this.loginButton = 'body > app-desktop > bc-gb-header > header > div > div.buttonWrapper > a';
         this.profileButton = 'body > app-desktop > bc-gb-header > header > div > a.header_account.prebootFreeze > span';
         this.loginForm = 'login-form';
+        this.listBetSelector = 'div.verticalScroller_wrapper > div > div > sports-markets-single-market:nth-child';
     }
 
     async addBets(matchs) {
@@ -25,6 +27,8 @@ class App {
                 choiceOdd: match.choiceOdd,
                 matchId: match.matchId,
                 maxOdd: match.maxOdd,
+                amountToWin: match.amountToWin,
+                betActionSerieId: match.betActionSerieId,
                 time: now,
                 try: 0,
             };
@@ -72,12 +76,24 @@ class App {
             if (bet.betCode === 'Ftb_Mr3') {
                 buttonSelector = await this.getResultSelectorToBet(page, bet.betName, bet.choiceName);
             }
+            // But pour les 2 équipes -> Oui ou Non
+            if (bet.betCode === 'Ftb_Bts') {
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
+            }
+            // Nombre total de but
+            if (bet.betCode === 'Ftb_10') {
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
+            }
             // Vainqueur du match Tennis -> %1% ou %2%
             if (bet.betCode === 'Ten_Mr2') {
                 buttonSelector = await this.getWinnerSelectorToBet(page, bet.betName, bet.choiceName);
             }
             // Score final (Set) Tennis
             if (bet.betCode === 'Ten_Set') {
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
+            }
+            // Score exact du 1er set Tennis
+            if (bet.betCode === 'Ten_Cs1') {
                 buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
             }
             // Baseball nombre total de run
@@ -92,14 +108,59 @@ class App {
             if (bet.betCode === 'Bkb_Mrs') {
                 buttonSelector = await this.getResultSelectorToBet(page, bet.betName, bet.choiceName);
             }
+            // Nombre total de points (Bkb_Tpt)
+            if (bet.betCode === 'Bkb_Tpt') {
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
+            }
+            // Vainqueur du match (Volley)
+            if (bet.betCode === 'Vlb_Mr2') {
+                buttonSelector = await this.getWinnerSelectorToBet(page, bet.betName, bet.choiceName);
+            }
+            // Vainqueur du match (Snooker)
+            if (bet.betCode === 'Snk_Mr2') {
+                buttonSelector = await this.getWinnerSelectorToBet(page, bet.betName, bet.choiceName);
+            }
+            // Résultat (Hockey)
+            if (bet.betCode === 'Ihk_Mrs') {
+                buttonSelector = await this.getResultSelectorToBet(page, bet.betName, bet.choiceName);
+            }
+            // Nombre total de but
+            if (bet.betCode === 'Ihk_TglM') {
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
+            }
+            // Vainqueur du match
+            if (bet.betCode === 'Ihk_Mnl') {
+                buttonSelector = await this.getWinnerSelectorToBet(page, bet.betName, bet.choiceName);
+            }
+            // Résultat (Rugby)
+            if (bet.betCode === 'Rgb_Mr3') {
+                buttonSelector = await this.getResultSelectorToBet(page, bet.betName, bet.choiceName);
+            }
+            // Nombre de points (Rugby)
+            if (bet.betCode === 'Rgb_Tpt') {
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
+            }
+            // Résultat (Hand-ball)
+            if (bet.betCode === 'Hdb_Mr2') {
+                buttonSelector = await this.getResultSelectorToBet(page, bet.betName, bet.choiceName);
+            }
             if (buttonSelector == null) {
                 console.log("Le paris n'a pas été trouvé");
+                this.sendBetToServer(bet.betActionSerieId, 0, 0, true);
                 this.endBetting(page);
                 return;
             }
             const oddValue = parseFloat((await this.getTextFromSelector(page, buttonSelector)).trim().replace(',', '.'));
+            if(oddValue < 1.1) {
+                console.log('Impossible de parier sur une côte inférieure à 1.1 sur betclic');
+                this.sendBetToServer(bet.betActionSerieId, 0, oddValue, true);
+                this.endBetting(page);
+                return;
+            }
+            let amountToBet = this.getAmountToBet(bet.amountToWin, oddValue);
             if (oddValue > bet.maxOdd) {
                 console.log('Odd value ' + oddValue + ' to bet is greater than max odd ' + bet.maxOdd);
+                this.sendBetToServer(bet.betActionSerieId, amountToBet, oddValue, true);
                 this.endBetting(page);
                 return;
             }
@@ -114,8 +175,8 @@ class App {
                 await this.logError(e);
             }
             try {
-                console.log('enter amount ...');
-                await this.selectorTypeValue(page,'app-betting-slip-single-bet-item-footer > div > div > app-bs-stake > div > input', process.env.AMOUNT_BET);
+                console.log('enter amount ...' + amountToBet);
+                await this.selectorTypeValue(page, 'app-betting-slip-single-bet-item > div > app-betting-slip-single-bet-item-footer > div > div > app-bs-stake > div > input', amountToBet);
             } catch (e) {
                 await this.logError(e);
             }
@@ -134,10 +195,13 @@ class App {
             if (await page.$(closeConfirmationBetButton) !== null) {
                 console.log('click on close confirmation bet ...');
                 await this.selectorClick(page, closeConfirmationBetButton);
+                this.sendBetToServer(bet.betActionSerieId, amountToBet, oddValue, false);
             } else {
                 await this.logError('button close confirmation bet not found');
+                this.sendBetToServer(bet.betActionSerieId, amountToBet, oddValue, true);
             }
         } else {
+            this.sendBetToServer(bet.betActionSerieId, 0, 0, true);
             console.log(bet.matchName + ' is not available on betclic : ' + page.url());
         }
         this.endBetting(page);
@@ -160,11 +224,11 @@ class App {
         if (indexBet === null) {
             console.log('Error : no bet.betName defined for ' + betName);
         } else {
-            buttonSelector = 'div.verticalScroller_wrapper > div > div > app-market:nth-child(' + indexBet + ') > div > div.ng-star-inserted > div > div > ';
+            buttonSelector = this.listBetSelector + '(' + indexBet + ') > div > sports-markets-single-market-selections-group > div > ';
             if (choiceName.toLowerCase() === '%1%') {
-                buttonSelector += 'div:nth-child(1) > app-selection';
+                buttonSelector += 'div:nth-child(1) > sports-selections-selection';
             } else if (choiceName.toLowerCase() === '%2%') {
-                buttonSelector += 'div:nth-child(2) > app-selection';
+                buttonSelector += 'div:nth-child(2) > sports-selections-selection';
             } else {
                 console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
             }
@@ -178,13 +242,13 @@ class App {
         if (indexBet === null) {
             console.log('Error : no bet.betName defined for ' + betName);
         } else {
-            buttonSelector = 'div.verticalScroller_wrapper > div > div > app-market:nth-child(' + indexBet + ') > div > div.ng-star-inserted > div > div > ';
+            buttonSelector = this.listBetSelector + '(' + indexBet + ') > div > sports-markets-single-market-selections-group > div > ';
             if (choiceName.toLowerCase() === '%1%') {
-                buttonSelector += 'div:nth-child(1) > app-selection';
+                buttonSelector += 'div:nth-child(1) > sports-selections-selection';
             } else if (choiceName.toLowerCase() === '%2%') {
-                buttonSelector += 'div:nth-child(3) > app-selection';
+                buttonSelector += 'div:nth-child(3) > sports-selections-selection';
             } else if (choiceName.toLowerCase() === 'nul') {
-                buttonSelector += 'div:nth-child(2) > app-selection';
+                buttonSelector += 'div:nth-child(2) > sports-selections-selection';
             } else {
                 console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
             }
@@ -198,12 +262,16 @@ class App {
         if (indexBet === null) {
             console.log('Error : no bet.betName defined for ' + betName);
         } else {
-            buttonSelector = 'div.verticalScroller_wrapper > div > div > app-market:nth-child(' + indexBet + ') > div';
+            buttonSelector = this.listBetSelector + '(' + indexBet + ') > div';
+            let showMorebuttonSelector = buttonSelector + ' > sports-markets-single-market-selections-group > div.seeMoreButton.prebootFreeze.ng-star-inserted';
+            if (await page.$(showMorebuttonSelector) !== null) {
+                await this.selectorClick(page, showMorebuttonSelector);
+            }
             const indexChoice = await this.getIndexOfChoice(page, buttonSelector, choiceName);
             if (indexChoice === null) {
                 console.log('Error : no bet.choiceName defined for ' + choiceName);
             } else {
-                buttonSelector += ' > div.ng-star-inserted > div > div > div:nth-child(' + indexChoice + ') > app-selection';
+                buttonSelector += ' > sports-markets-single-market-selections-group > div.marketBox_body.is-2col.ng-star-inserted > div:nth-child(' + indexChoice + ') > sports-selections-selection';
             }
         }
         return buttonSelector;
@@ -211,9 +279,9 @@ class App {
 
     async getIndexOfBet(page, betName) {
         for (let index = 0; index < 10; index++) {
-            const selectorTmp = 'div.verticalScroller_wrapper > div > div > app-market:nth-child(' + index + ') > div >  div.marketBox_head > h2';
+            const selectorTmp = this.listBetSelector + '(' + index + ') > div >  div.marketBox_head > h2';
             const betNameTmp = (await this.getTextFromSelector(page, selectorTmp)).trim();
-            if (betName.toLowerCase() === betNameTmp.toLowerCase()) {
+            if (betName.toLowerCase().trim() === betNameTmp.toLowerCase()) {
                 return index;
             }
         }
@@ -222,7 +290,7 @@ class App {
 
     async getIndexOfChoice(page, selector, choiceName) {
         for (let index = 0; index < 20; index++) {
-            const selectorTmp = selector + ' > div.ng-star-inserted > div > div > div:nth-child(' + index + ') > p';
+            const selectorTmp = selector + ' > sports-markets-single-market-selections-group > div.marketBox_body.is-2col.ng-star-inserted > div:nth-child(' + index + ') > p';
             const choiceNameTmp = (await this.getTextFromSelector(page, selectorTmp)).trim();
             if (choiceNameTmp.toLowerCase() === choiceName.toLowerCase()) {
                 return index;
@@ -331,6 +399,7 @@ class App {
             console.log('button ok not found after logging error');
             console.log('==============================================================================');
         }
+        await this.timeout(2000);
         return page;
     }
 
@@ -360,7 +429,7 @@ class App {
 
     async selectorTypeValue(page, selector, value) {
         await this.deleteInputValue(page, selector);
-        await page.type(selector, value);
+        await page.type(selector, value.toString());
         await this.timeout(500);
     }
 
@@ -378,6 +447,14 @@ class App {
                 resolve();
             }, time);
         });
+    }
+
+    getAmountToBet(amountToWin, odd) {
+        return process.env.AMOUNT_BET;
+    }
+
+    sendBetToServer(betActionSerieId, amountBet, odd, canceled) {
+        // Nothing to send to server
     }
 }
 
