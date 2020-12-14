@@ -35,17 +35,36 @@ puppeteer.launch({
     if (false) {
         betclicBet.addBets(
             [{
-                choiceName: '%1%',
-                matchName: 'test matchName',
-                matchId: '2617894',
-                betCode: 'Ftb_Mr3',
-                betName: 'Résultat du match',
-                choiceOdd: 1.67,
-                maxOdd: 20.054,
+                betCode: 'Snk_Mr2',
+                betName: 'Résultat',
+                matchName: 'Mark King - David Lilley',
+                choiceName: '%2%',
+                choiceOdd: 3.5,
+                matchId: 2759865,
+                maxOdd: 30.515,
+                amountToWin: 0.3,
+                betActionSerieId: 103,
+                time: 1606243863,
+                try: 0
             }]
         );
     }
-
+    if (false) {
+        try {
+            superagent.get(process.env.URL_GET_BET_MARTINGALE + "?minutesRange=" + process.env.MINUTES_RANGE)
+                .then(res => {
+                    betclicBet.addBets(res.body.matchs);
+                })
+                .catch(err => {
+                    console.log('err get matchs', err);
+                });
+        } catch (e) {
+            console.log('==============================================================================');
+            console.log('Error when get match to bet on ' + process.env.BET_URL);
+            console.log(e);
+            console.log('==============================================================================');
+        }
+    }
     const job = new CronJob('1 1,11,21,31,41,51 * * * *', () => {
         try {
             superagent.get(process.env.BET_URL + "?minutesRange=" + process.env.MINUTES_RANGE)
