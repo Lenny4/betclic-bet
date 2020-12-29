@@ -132,6 +132,10 @@ class App {
             if (bet.betCode === 'Ihk_Mnl') {
                 buttonSelector = await this.getWinnerSelectorToBet(page, bet.betName, bet.choiceName);
             }
+            // Double chance
+            if (bet.betCode === 'Ihk_Dbc') {
+                buttonSelector = await this.getDoubleChanceToBet(page, bet.betName, bet.choiceName);
+            }
             // Résultat (Rugby)
             if (bet.betCode === 'Rgb_Mr3') {
                 buttonSelector = await this.getResultSelectorToBet(page, bet.betName, bet.choiceName);
@@ -248,6 +252,26 @@ class App {
             } else if (choiceName.toLowerCase() === '%2%') {
                 buttonSelector += 'div:nth-child(3) > sports-selections-selection > div > span';
             } else if (choiceName.toLowerCase() === 'nul') {
+                buttonSelector += 'div:nth-child(2) > sports-selections-selection > div > span';
+            } else {
+                console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
+            }
+        }
+        return buttonSelector;
+    }
+
+    async getDoubleChanceToBet(page, betName, choiceName) {
+        let buttonSelector;
+        const indexBet = await this.getIndexOfBet(page, betName);
+        if (indexBet === null) {
+            console.log('Error : no bet.betName defined for ' + betName);
+        } else {
+            buttonSelector = this.listBetSelector + '(' + indexBet + ') > div > sports-markets-single-market-selections-group > div > ';
+            if (choiceName.toLowerCase() === '%1% ou nul') {
+                buttonSelector += 'div:nth-child(1) > sports-selections-selection > div > span';
+            } else if (choiceName.toLowerCase() === 'nul ou %2%') {
+                buttonSelector += 'div:nth-child(3) > sports-selections-selection > div > span';
+            } else if (choiceName.toLowerCase() === '%1% %2%') {
                 buttonSelector += 'div:nth-child(2) > sports-selections-selection > div > span';
             } else {
                 console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
