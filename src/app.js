@@ -271,7 +271,7 @@ class App {
                 buttonSelector += 'div:nth-child(1) > sports-selections-selection > div > span';
             } else if (choiceName.toLowerCase() === 'nul ou %2%') {
                 buttonSelector += 'div:nth-child(3) > sports-selections-selection > div > span';
-            } else if (choiceName.toLowerCase() === '%1% %2%') {
+            } else if (choiceName.toLowerCase() === '%1% ou %2%') {
                 buttonSelector += 'div:nth-child(2) > sports-selections-selection > div > span';
             } else {
                 console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
