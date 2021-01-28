@@ -72,6 +72,9 @@ class App {
         if (page.url().includes(bet.matchId)) {
             await this.clearPanier(page);
             let buttonSelector = null;
+
+            // ------------------- FOOT
+
             // Résultat du match Foot -> %1% ou nul ou %2%
             if (bet.betCode === 'Ftb_Mr3') {
                 buttonSelector = await this.getResultSelectorToBet(page, bet.betName, bet.choiceName);
@@ -84,6 +87,17 @@ class App {
             if (bet.betCode === 'Ftb_10') {
                 buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
             }
+            // Double chance
+            if (bet.betCode === 'Ftb_Dbc') {
+                buttonSelector = await this.getDoubleChanceSelectorToBet(page, bet.betName, bet.choiceName);
+            }
+            // Résultat du match (Remboursé si match nul)
+            if (bet.betCode === 'Ftb_5') {
+                buttonSelector = await this.getWinnerSelectorToBet(page, bet.betName, bet.choiceName);
+            }
+
+            // ------------------- TENNIS
+
             // Vainqueur du match Tennis -> %1% ou %2%
             if (bet.betCode === 'Ten_Mr2') {
                 buttonSelector = await this.getWinnerSelectorToBet(page, bet.betName, bet.choiceName);
@@ -96,10 +110,24 @@ class App {
             if (bet.betCode === 'Ten_Cs1') {
                 buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
             }
+            // Nombre total de jeux
+            if (bet.betCode === 'Ten_Tgm') {
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
+            }
+
+            // ------------------- BASEBALL
+
             // Baseball nombre total de run
             if (bet.betCode === 'Bsb_Trn') {
                 buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
             }
+            // Vainqueur du match
+            if (bet.betCode === 'Bsb_Mwi') {
+                buttonSelector = await this.getWinnerSelectorToBet(page, bet.betName, bet.choiceName);
+            }
+
+            // ------------------- BASKETBALL
+
             // Vainqueur du match (Basket)
             if (bet.betCode === 'Bkb_Mr6') {
                 buttonSelector = await this.getWinnerSelectorToBet(page, bet.betName, bet.choiceName);
@@ -112,14 +140,27 @@ class App {
             if (bet.betCode === 'Bkb_Tpt') {
                 buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
             }
+
+            // ------------------- VOLLEY
+
             // Vainqueur du match (Volley)
             if (bet.betCode === 'Vlb_Mr2') {
                 buttonSelector = await this.getWinnerSelectorToBet(page, bet.betName, bet.choiceName);
             }
+            // Vainqueur du match (Volley)
+            if (bet.betCode === 'Vlb_Tpt') {
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
+            }
+
+            // ------------------- SNOOKER
+
             // Vainqueur du match (Snooker)
             if (bet.betCode === 'Snk_Mr2') {
                 buttonSelector = await this.getWinnerSelectorToBet(page, bet.betName, bet.choiceName);
             }
+
+            // ------------------- HOCKEY
+
             // Résultat (Hockey)
             if (bet.betCode === 'Ihk_Mrs') {
                 buttonSelector = await this.getResultSelectorToBet(page, bet.betName, bet.choiceName);
@@ -132,6 +173,13 @@ class App {
             if (bet.betCode === 'Ihk_Mnl') {
                 buttonSelector = await this.getWinnerSelectorToBet(page, bet.betName, bet.choiceName);
             }
+            // Double chance
+            if (bet.betCode === 'Ihk_Dbc') {
+                buttonSelector = await this.getDoubleChanceSelectorToBet(page, bet.betName, bet.choiceName);
+            }
+
+            // ------------------- RUGBY
+
             // Résultat (Rugby)
             if (bet.betCode === 'Rgb_Mr3') {
                 buttonSelector = await this.getResultSelectorToBet(page, bet.betName, bet.choiceName);
@@ -140,10 +188,16 @@ class App {
             if (bet.betCode === 'Rgb_Tpt') {
                 buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
             }
+
+            // ------------------- HAND-BALL
+
             // Résultat (Hand-ball)
             if (bet.betCode === 'Hdb_Mr2') {
                 buttonSelector = await this.getResultSelectorToBet(page, bet.betName, bet.choiceName);
             }
+
+            // -------------------
+
             if (buttonSelector == null) {
                 console.log("Le paris n'a pas été trouvé");
                 this.sendBetToServer(bet.betActionSerieId, 0, 0, true);
@@ -248,6 +302,26 @@ class App {
             } else if (choiceName.toLowerCase() === '%2%') {
                 buttonSelector += 'div:nth-child(3) > sports-selections-selection > div > span';
             } else if (choiceName.toLowerCase() === 'nul') {
+                buttonSelector += 'div:nth-child(2) > sports-selections-selection > div > span';
+            } else {
+                console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
+            }
+        }
+        return buttonSelector;
+    }
+
+    async getDoubleChanceSelectorToBet(page, betName, choiceName) {
+        let buttonSelector;
+        const indexBet = await this.getIndexOfBet(page, betName);
+        if (indexBet === null) {
+            console.log('Error : no bet.betName defined for ' + betName);
+        } else {
+            buttonSelector = this.listBetSelector + '(' + indexBet + ') > div > sports-markets-single-market-selections-group > div > ';
+            if (choiceName.toLowerCase() === '%1% ou Nul') {
+                buttonSelector += 'div:nth-child(1) > sports-selections-selection > div > span';
+            } else if (choiceName.toLowerCase() === 'Nul ou %2%') {
+                buttonSelector += 'div:nth-child(3) > sports-selections-selection > div > span';
+            } else if (choiceName.toLowerCase() === '%1% ou %2%') {
                 buttonSelector += 'div:nth-child(2) > sports-selections-selection > div > span';
             } else {
                 console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
