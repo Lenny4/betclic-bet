@@ -69,7 +69,6 @@ puppeteer.launch({
         try {
             superagent.get(process.env.BET_URL + "?minutesRange=" + process.env.MINUTES_RANGE)
                 .then(res => {
-                    console.log(res.body.matchs);
                     betclicBet.addBets(res.body.matchs);
                 })
                 .catch(err => {
