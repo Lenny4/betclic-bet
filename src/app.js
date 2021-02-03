@@ -18,8 +18,7 @@ class App {
         for (let match of matchs) {
             const doublon = this.doublons.find(x =>
                 x.matchId === match.matchId
-                && x.betCode === match.betCode
-                && x.betName === match.betName);
+                && x.betCode === match.betCode);
             const bet = {
                 betCode: match.betCode,
                 betName: match.betName,
