@@ -71,6 +71,7 @@ class App {
         console.log('start betting');
         if (page.url().includes(bet.matchId)) {
             await this.clearPanier(page);
+            await this.timeout(2000);
             let buttonSelector = null;
 
             // ------------------- FOOT
