@@ -11,6 +11,7 @@ class App {
         this.profileButton = 'body > app-desktop > bc-gb-header > header > div > a.header_account.prebootFreeze > span';
         this.loginForm = 'login-form';
         this.listBetSelector = 'div.verticalScroller_wrapper > div > div > sports-markets-single-market:nth-child';
+        this.listBetSelectorDoubleChanceFoot = 'div.verticalScroller_wrapper > div > div > sports-markets-grouped-markets';
     }
 
     async addBets(matchs) {
@@ -90,7 +91,7 @@ class App {
             }
             // Double chance
             if (bet.betCode === 'Ftb_Dbc') {
-                buttonSelector = await this.getDoubleChanceSelectorToBet(page, bet.betName, bet.choiceName);
+                buttonSelector = await this.getDoubleChanceFootSelectorToBet(page, bet.betName, bet.choiceName);
             }
             // Résultat du match (Remboursé si match nul)
             if (bet.betCode === 'Ftb_5') {
@@ -206,7 +207,7 @@ class App {
                 return;
             }
             const oddValue = parseFloat((await this.getTextFromSelector(page, buttonSelector)).trim().replace(',', '.'));
-            if(oddValue < 1.1) {
+            if (oddValue < 1.1) {
                 console.log('Impossible de parier sur une côte inférieure à 1.1 sur betclic');
                 this.sendBetToServer(bet.betActionSerieId, 0, oddValue, true);
                 this.endBetting(page);
@@ -318,11 +319,11 @@ class App {
             console.log('Error : no bet.betName defined for ' + betName);
         } else {
             buttonSelector = this.listBetSelector + '(' + indexBet + ') > div > sports-markets-single-market-selections-group > div > ';
-            if (choiceName.toLowerCase() === '%1% ou Nul') {
+            if (choiceName.toLowerCase() === '%1% ou Nul'.toLowerCase()) {
                 buttonSelector += 'div:nth-child(1) > sports-selections-selection > div > span';
-            } else if (choiceName.toLowerCase() === 'Nul ou %2%') {
+            } else if (choiceName.toLowerCase() === 'Nul ou %2%'.toLowerCase()) {
                 buttonSelector += 'div:nth-child(3) > sports-selections-selection > div > span';
-            } else if (choiceName.toLowerCase() === '%1% ou %2%') {
+            } else if (choiceName.toLowerCase() === '%1% ou %2%'.toLowerCase()) {
                 buttonSelector += 'div:nth-child(2) > sports-selections-selection > div > span';
             } else {
                 console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
@@ -347,6 +348,27 @@ class App {
                 console.log('Error : no bet.choiceName defined for ' + choiceName);
             } else {
                 buttonSelector += ' > sports-markets-single-market-selections-group > div.marketBox_body.is-2col.ng-star-inserted > div:nth-child(' + indexChoice + ') > sports-selections-selection > div > span';
+            }
+        }
+        return buttonSelector;
+    }
+
+    async getDoubleChanceFootSelectorToBet(page, betName, choiceName) {
+        let selectorTmp = this.listBetSelectorDoubleChanceFoot + ' > div > div.marketBox_head > h2';
+        const betNameTmp = (await this.getTextFromSelector(page, selectorTmp)).trim();
+        let buttonSelector;
+        if (betName.toLowerCase().trim() !== betNameTmp.toLowerCase()) {
+            console.log('Error : no bet.betName defined for ' + betName);
+        } else {
+            buttonSelector = this.listBetSelectorDoubleChanceFoot + ' > div > div.marketBox_body.ng-star-inserted >';
+            if (choiceName.toLowerCase() === '%1% ou Nul'.toLowerCase()) {
+                buttonSelector += 'div:nth-child(2) > div.marketBox_list > div:nth-child(1) > sports-selections-selection';
+            } else if (choiceName.toLowerCase() === 'Nul ou %2%'.toLowerCase()) {
+                buttonSelector += 'div:nth-child(4) > div.marketBox_list > div:nth-child(1) > sports-selections-selection';
+            } else if (choiceName.toLowerCase() === '%1% ou %2%'.toLowerCase()) {
+                buttonSelector += 'div:nth-child(3) > div.marketBox_list > div:nth-child(1) > sports-selections-selection';
+            } else {
+                console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
             }
         }
         return buttonSelector;
