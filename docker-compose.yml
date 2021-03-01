@@ -1,0 +1,17 @@
+version: '3.2'
+services:
+  betclic-bet:
+    container_name: betclic-bet
+    restart: unless-stopped
+    environment:
+      NODE_START_COMMAND: "${NODE_START_COMMAND}"
+      HTTP_PASSWORD: "${HTTP_PASSWORD}"
+      DISPLAY: ":1.0"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/var/www/html
+      - /dev/shm:/dev/shm
+    ports:
+      - "6080:80"

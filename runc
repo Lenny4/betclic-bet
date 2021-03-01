@@ -1,0 +1,6 @@
+#!/bin/sh
+if [ ! "$(docker-compose ps -q betclic-bet)" ]; then
+   echo "Unable to connect to docker container. Have you run 'docker-compose up -d' ?"
+else
+   docker-compose exec betclic-bet $@
+fi
