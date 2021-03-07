@@ -1,2 +1,1 @@
-tor:
- https://levelup.gitconnected.com/anonymous-web-scrapping-with-node-js-tor-apify-and-cheerio-3b36ec6a45dc
+scp ubuntu@152.228.143.248:/home/ubuntu/project/betclic-bet/videos/* ./

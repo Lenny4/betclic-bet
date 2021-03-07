@@ -536,7 +536,7 @@ class App {
     }
 
     async startRecord(name) {
-        exec('ffmpeg -f x11grab -s wxga -r 25 -i :0.0 -qscale 0 videos/' + slugify(name) + '.mpg');
+        exec('ffmpeg -f x11grab -s wxga -r 25 -i :' + process.env.DISPLAY + ' -qscale 0 videos/' + slugify(name) + '.mpg');
         await this.timeout(1000);
     }
 
