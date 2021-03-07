@@ -452,7 +452,8 @@ class App {
         console.log('not logging yet, go to login page');
         await this.timeout(1000);
         await this.deletePopUp(page);
-        await this.selectorClick(page, this.loginButton);
+        await page.goto('https://www.betclic.fr/connexion');
+        await page.addScriptTag({path: 'lib/jquery-3.4.1.min.js'});
         await page.waitForSelector(this.loginForm, {visible: true});
         await this.selectorTypeValue(page, '#loginPage_username > input', process.env.LOGIN_USERNAME);
         await this.selectorTypeValue(page, '#loginpage_password > input', process.env.LOGIN_PASSWORD);
@@ -549,11 +550,19 @@ class App {
     }
 
     async startRecord(name) {
-        exec('ffmpeg -f x11grab -s wxga -r 25 -i :' + process.env.DISPLAY + ' -qscale 0 videos/' + slugify(name) + '.mpg');
+        console.log('start recording ...');
+        exec('ffmpeg -f x11grab -s wxga -r 25 -i :' + process.env.DISPLAY + ' -qscale 0 videos/' + slugify(name) + '.mpg', (err, stdout, stderr) => {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log(stdout);
+            }
+        });
         await this.timeout(1000);
     }
 
     async stopAllRecord() {
+        console.log('stop recording');
         exec('pkill -f ffmp');
         await this.timeout(1000);
     }
