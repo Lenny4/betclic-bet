@@ -27,6 +27,7 @@
     "express": "^4.17.1",
     "log-timestamp": "^0.3.0",
     "puppeteer": "^8.0.0",
+    "slugify": "^1.4.7",
     "superagent": "^6.1.0"
   }
 }

@@ -19,6 +19,7 @@ server.listen(process.env.PORT, () => {
 puppeteer.launch({
     headless: process.env.HEADLESS === '1',
     ignoreHTTPSErrors: true,
+    defaultViewport: null,
     userDataDir: './tmp',
     args: [
         '--no-sandbox',
@@ -26,6 +27,7 @@ puppeteer.launch({
         '--disable-infobars',
         '--window-position=0,0',
         '--ignore-certifcate-errors',
+        '--disable-notifications',
         '--ignore-certifcate-errors-spki-list',
         '--user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3312.0 Safari/537.36"'
     ]

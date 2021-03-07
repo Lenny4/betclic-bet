@@ -1,5 +1,7 @@
 const clone = require('clone');
 const superagent = require('superagent');
+const {exec} = require('child_process');
+const slugify = require('slugify');
 
 class App {
     constructor(browser) {
@@ -52,9 +54,10 @@ class App {
             this.isBetting = false;
             return;
         }
+        const bet = this.bets[0];
+        await this.startRecord(bet.matchName);
         console.log('start betting');
         const now = Math.round(new Date().getTime() / 1000);
-        const bet = this.bets[0];
         console.log('is betting on ', bet);
         let page = await this.browser.newPage();
         console.log('start try, page created for bet');
@@ -205,7 +208,7 @@ class App {
                 return;
             }
             const oddValue = parseFloat((await this.getTextFromSelector(page, buttonSelector)).trim().replace(',', '.'));
-            if(oddValue < 1.1) {
+            if (oddValue < 1.1) {
                 console.log('Impossible de parier sur une côte inférieure à 1.1 sur betclic');
                 this.sendBetToServer(bet.betActionSerieId, 0, oddValue, true);
                 this.endBetting(page);
@@ -269,6 +272,7 @@ class App {
 
         await page.goto('about:blank');
         await page.close();
+        await this.stopAllRecord();
         this.bet();
     }
 
@@ -529,6 +533,16 @@ class App {
 
     sendBetToServer(betActionSerieId, amountBet, odd, canceled) {
         // Nothing to send to server
+    }
+
+    async startRecord(name) {
+        exec('ffmpeg -f x11grab -s wxga -r 25 -i :0.0 -qscale 0 videos/' + slugify(name) + '.mpg');
+        await this.timeout(1000);
+    }
+
+    async stopAllRecord() {
+        exec('pkill -f ffmp');
+        await this.timeout(1000);
     }
 }
 

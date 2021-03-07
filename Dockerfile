@@ -6,7 +6,7 @@ RUN apt-get -y update \
 
 # region Node https://github.com/nodesource/distributions/blob/master/README.md
 RUN curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash - \
-    && apt-get install -y nodejs \
+    && apt-get install -y nodejs ffmpeg vlc \
     && npm install -g nodemon pm2
 # endregion Node
 
