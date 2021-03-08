@@ -449,6 +449,8 @@ class App {
             console.log('already logging');
             return page;
         }
+        let previousUrl = page.url();
+        let hasReturnUrl = false;
         console.log('not logging yet, go to login page');
         await this.timeout(1000);
         await this.deletePopUp(page);
@@ -470,6 +472,7 @@ class App {
                     await this.timeout(2000);
                     console.log('Ok button found after login');
                     console.log('page going to ' + returnUrl);
+                    hasReturnUrl = true;
                     await page.goto(returnUrl, {
                         waitUntil: ['load', 'networkidle0', 'domcontentloaded', 'networkidle2'],
                         // Remove the timeout
@@ -490,6 +493,14 @@ class App {
             console.log('==============================================================================');
             console.log('button ok not found after logging error');
             console.log('==============================================================================');
+        }
+        if (hasReturnUrl === false) {
+            await page.goto(previousUrl, {
+                waitUntil: ['load', 'networkidle0', 'domcontentloaded', 'networkidle2'],
+                // Remove the timeout
+                timeout: 0
+            });
+            await page.addScriptTag({path: 'lib/jquery-3.4.1.min.js'});
         }
         await this.timeout(2000);
         return page;
