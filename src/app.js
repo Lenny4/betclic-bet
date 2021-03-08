@@ -551,7 +551,7 @@ class App {
 
     async startRecord(name) {
         console.log('start recording ...');
-        exec('ffmpeg -f x11grab -s wxga -r 25 -i :' + process.env.DISPLAY + ' -qscale 0 videos/' + slugify(name) + '.mpg', (err, stdout, stderr) => {
+        exec('ffmpeg -f x11grab -s wxga -r 25 -i ' + process.env.DISPLAY + ' -qscale 0 videos/' + slugify(name) + '.mpg', (err, stdout, stderr) => {
             if (err) {
                 console.log(err);
             } else {
