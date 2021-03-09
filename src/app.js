@@ -216,6 +216,8 @@ class App {
             let amountToBet = this.getAmountToBet(bet.amountToWin, oddValue);
             if (oddValue > bet.maxOdd) {
                 console.log('Odd value ' + oddValue + ' to bet is greater than max odd ' + bet.maxOdd);
+                // Cas particulier pour permettre de parier dessus plus tard si l'heure change
+                this.doublons = this.doublons.filter(x => x.matchId !== bet.matchId && x.betCode !== bet.betCode);
                 this.sendBetToServer(bet.betActionSerieId, amountToBet, oddValue, true);
                 this.endBetting(page);
                 return;
