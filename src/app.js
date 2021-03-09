@@ -41,7 +41,7 @@ class App {
                 console.log('doublon du bet ', bet);
             }
         }
-        this.doublons = this.doublons.filter(x => x.time >= (now - 3600));
+        this.doublons = this.doublons.filter(x => x.time >= (now - (3600 * 24)));
         if (!this.isBetting) {
             this.bet();
         }
