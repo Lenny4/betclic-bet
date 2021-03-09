@@ -70,6 +70,19 @@ class App {
         console.log('page before login');
         page = await this.login(page, url);
         console.log('start betting');
+        let maxAttemptWinning = 0;
+        while (page.url().includes('winnings')) {
+            await page.goto(url, {
+                waitUntil: ['load', 'networkidle0', 'domcontentloaded', 'networkidle2'],
+                // Remove the timeout
+                timeout: 0
+            });
+            await page.addScriptTag({path: 'lib/jquery-3.4.1.min.js'});
+            maxAttemptWinning++;
+            if (maxAttemptWinning >= 5) {
+                break;
+            }
+        }
         if (page.url().includes(bet.matchId)) {
             await this.clearPanier(page);
             await this.timeout(2000);
