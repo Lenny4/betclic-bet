@@ -64,7 +64,7 @@ fs.readFile('src/machine-learning/extract_odds_waver.json', 'utf8', (err, datas)
     }
     // region results
     const end = new Date();
-    const fileName = end.toDateString() + '_' + trainData.length + '_' + testData.length;
+    const fileName = '_' + end.toDateString() + '_' + trainData.length + '_' + testData.length;
     console.log('Plus les valeurs sont proches de 1 et constantes (' + fileName + '_chart.txt) plus le machine learning est bon');
     const time = Math.trunc((end.getTime() - start.getTime()) / 1000)
     console.log('Time in seconds : ' + time)
