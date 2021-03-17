@@ -446,17 +446,17 @@ class App {
 
     async clearPanier(page) {
         try {
-            const deletePanierButton = 'body > app-desktop > div.layout > div > div > div > app-right-menu > app-betting-slip > div > div > div.bettingslip_headerDelete.ng-star-inserted > div > button';
-            if (await page.$(deletePanierButton) !== null) {
-                if (await page.waitForSelector(deletePanierButton, {timeout: 2000})) {
+            console.log("Nettoyage panier");
+            const deletePanierButton = 'div.bettingslip_headerDelete > div > button';
+            if (await this.selectorVisible(page, deletePanierButton)) {
                     await this.selectorClick(page, deletePanierButton);
-                    const supprimerButton = '#action';
-                    if (await page.waitForSelector(supprimerButton, {timeout: 2000})) {
+                    const supprimerButton = '#mat-dialog-0 > bcdk-mandatory-action-dialog > div > div.buttonWrapper.modal_footer > button:nth-child(2)';
+                    if (await this.selectorVisible(page, supprimerButton)) {
                         await this.selectorClick(page, supprimerButton);
-                        await this.timeout(2000);
                     }
-                }
             }
+            console.log("Panier supprimé");
+            await this.timeout(2000);
         } catch (e) {
             console.log('==============================================================================');
             console.log(e);
