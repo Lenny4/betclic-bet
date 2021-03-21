@@ -2,6 +2,8 @@ const clone = require('clone');
 const superagent = require('superagent');
 const {exec} = require('child_process');
 const slugify = require('slugify');
+const fs = require('fs');
+const {readdirSync} = require('fs')
 
 class App {
     constructor(browser) {
@@ -9,6 +11,7 @@ class App {
         this.doublons = [];
         this.isBetting = false;
         this.browser = browser;
+        this.videoFolder = 'videos';
         this.loginButton = 'body > app-desktop > bc-gb-header > header > div > div.buttonWrapper > a';
         this.profileButton = 'body > app-desktop > bc-gb-header > header > div > a.header_account.prebootFreeze > span';
         this.loginForm = 'login-form';
@@ -49,6 +52,10 @@ class App {
         }
     }
 
+    convertDateToFolderName(date) {
+        return date.toISOString().split('T')[0];
+    }
+
     async bet() {
         this.isBetting = true;
         if (this.bets.length === 0) {
@@ -56,7 +63,7 @@ class App {
             return;
         }
         const bet = this.bets[0];
-        await this.startRecord(bet.matchName);
+        await this.startRecord(bet.matchName, [this.convertDateToFolderName(new Date())]);
         console.log('start betting');
         const now = Math.round(new Date().getTime() / 1000);
         console.log('is betting on ', bet);
@@ -599,9 +606,24 @@ class App {
         // Nothing to send to server
     }
 
-    async startRecord(name) {
+    async startRecord(name, folders) {
+        const mainFolder = this.videoFolder;
+        let filePath = './' + mainFolder;
+        if (!fs.existsSync(filePath)) {
+            fs.mkdirSync(filePath);
+        }
+        if (Array.isArray(folders)) {
+            for (let folder of folders) {
+                filePath += '/' + folder;
+                if (!fs.existsSync(filePath)) {
+                    fs.mkdirSync(filePath);
+                }
+            }
+        }
         console.log('start recording ...');
-        exec('ffmpeg -f x11grab -s wxga -r 25 -i ' + process.env.DISPLAY + ' -qscale 0 videos/' + slugify(name) + '.mpg', (err, stdout, stderr) => {
+        filePath = filePath + "/" + slugify(name) + ".avi";
+        // https://unix.stackexchange.com/questions/14979/how-to-record-my-full-screen-with-audio
+        exec("ffmpeg -f x11grab -s `xdpyinfo | grep -i dimensions: | sed 's/[^0-9]*pixels.*(.*).*//' | sed 's/[^0-9x]*//'` -r 25 -i " + process.env.DISPLAY + " -qscale 0 " + filePath, (err, stdout, stderr) => {
             if (err) {
                 console.log(err);
             } else {
@@ -609,6 +631,25 @@ class App {
             }
         });
         await this.timeout(1000);
+        return filePath;
+    }
+
+    deleteOldVideos(maxDaysToKeep) {
+        const availableDates = [];
+        for (let i = 0; i <= maxDaysToKeep; i++) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            availableDates.push(this.convertDateToFolderName(date));
+        }
+        const mainFolder = './' + this.videoFolder;
+        const allFolders = readdirSync(mainFolder, {withFileTypes: true})
+            .filter(dirent => dirent.isDirectory())
+            .map(dirent => dirent.name);
+        for (let folder of allFolders) {
+            if (!availableDates.includes(folder)) {
+                fs.rmdirSync(mainFolder + '/' + folder, {recursive: true});
+            }
+        }
     }
 
     async stopAllRecord() {

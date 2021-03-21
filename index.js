@@ -84,4 +84,16 @@ puppeteer.launch({
         }
     }, null, true, 'UTC');
     job.start();
+
+    const jobDeleteOldVideos = new CronJob('0 0 0 * * *', () => {
+        try {
+            betclicBet.deleteOldVideos(10);
+        } catch (e) {
+            console.log('==============================================================================');
+            console.log('Error job deleteOldVideos');
+            console.log(e);
+            console.log('==============================================================================');
+        }
+    }, null, true, 'UTC');
+    jobDeleteOldVideos.start();
 });

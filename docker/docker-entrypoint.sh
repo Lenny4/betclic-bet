@@ -2,6 +2,8 @@
 set -e
 
 npm install
+#https://stackoverflow.com/questions/53997175/puppeteer-error-chromium-revision-is-not-downloaded
+node node_modules/puppeteer/install.js
 
 cat <<"EOF"
                                                                         ,---,

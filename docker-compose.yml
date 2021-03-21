@@ -6,7 +6,7 @@ services:
     environment:
       NODE_START_COMMAND: "${NODE_START_COMMAND}"
       HTTP_PASSWORD: "${HTTP_PASSWORD}"
-      DISPLAY: ":1.0"
+      DISPLAY: "${DISPLAY}"
     build:
       context: .
       dockerfile: Dockerfile
