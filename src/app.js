@@ -1,9 +1,8 @@
-const clone = require('clone');
-const superagent = require('superagent');
 const {exec} = require('child_process');
 const slugify = require('slugify');
 const fs = require('fs');
 const {readdirSync} = require('fs')
+const SlackService = require('./Service/SlackService');
 
 class App {
     constructor(browser) {
@@ -17,6 +16,9 @@ class App {
         this.loginForm = 'login-form';
         this.listBetSelector = 'div.verticalScroller_wrapper > div > div > sports-markets-single-market:nth-child';
         this.listBetSelectorDoubleChanceFoot = 'div.verticalScroller_wrapper > div > div > sports-markets-grouped-markets';
+        this.slackCurrentLog = '';
+        this.slackCurrentChannel = process.env.SLACK_CHANNEL_SUCCESS_DETAIL_ID;
+        this.slackCurrentMatchName = '';
     }
 
     async addBets(matchs) {
@@ -56,6 +58,27 @@ class App {
         return date.toISOString().split('T')[0];
     }
 
+    addLog(...messages) {
+        for (let message of messages) {
+            console.log(message);
+            if (this.canStringify(message)) {
+                this.slackCurrentLog += JSON.stringify(message) + "\n";
+            }
+        }
+    }
+
+    canStringify(str) {
+        try {
+            JSON.stringify(str);
+        } catch (e) {
+            console.log('Error isJson');
+            console.log(str);
+            console.log(e);
+            return false;
+        }
+        return true;
+    }
+
     async bet() {
         this.isBetting = true;
         if (this.bets.length === 0) {
@@ -63,23 +86,26 @@ class App {
             return;
         }
         const bet = this.bets[0];
+        // region slack
+        this.slackCurrentChannel = process.env.SLACK_CHANNEL_SUCCESS_DETAIL_ID;
+        this.slackCurrentLog = '';
+        this.slackCurrentMatchName = bet.matchName;
+        // endregion
         await this.startRecord(bet.matchName, [this.convertDateToFolderName(new Date())]);
-        console.log('start betting');
-        const now = Math.round(new Date().getTime() / 1000);
-        console.log('is betting on ', bet);
+        this.addLog('is betting on ', bet);
         let page = await this.browser.newPage();
-        console.log('start try, page created for bet');
+        this.addLog('start try, page created for bet');
         const url = 'https://www.betclic.fr/' + '-m' + bet.matchId;
-        console.log('page going to ' + url);
+        this.addLog('page going to ' + url);
         await page.goto(url, {
             waitUntil: ['load', 'networkidle0', 'domcontentloaded', 'networkidle2'],
             // Remove the timeout
             timeout: 0
         });
         await page.addScriptTag({path: 'lib/jquery-3.4.1.min.js'});
-        console.log('page before login');
+        this.addLog('page before login');
         page = await this.login(page, url);
-        console.log('start betting');
+        this.addLog('start betting');
         let maxAttemptWinning = 0;
         while (page.url().includes('winnings')) {
             await page.goto(url, {
@@ -224,21 +250,21 @@ class App {
             // -------------------
 
             if (buttonSelector == null) {
-                console.log("Le paris n'a pas été trouvé");
+                this.addLog("Le paris n'a pas été trouvé");
                 this.sendBetToServer(bet.betActionSerieId, 0, 0, true);
                 this.endBetting(page);
                 return;
             }
             const oddValue = parseFloat((await this.getTextFromSelector(page, buttonSelector)).trim().replace(',', '.'));
             if (oddValue < 1.1) {
-                console.log('Impossible de parier sur une côte inférieure à 1.1 sur betclic');
+                this.addLog('Impossible de parier sur une côte inférieure à 1.1 sur betclic');
                 this.sendBetToServer(bet.betActionSerieId, 0, oddValue, true);
                 this.endBetting(page);
                 return;
             }
             let amountToBet = this.getAmountToBet(bet.amountToWin, oddValue);
             if (oddValue > bet.maxOdd) {
-                console.log('Odd value ' + oddValue + ' to bet is greater than max odd ' + bet.maxOdd);
+                this.addLog('Odd value ' + oddValue + ' to bet is greater than max odd ' + bet.maxOdd);
                 // Cas particulier pour permettre de parier dessus plus tard si l'heure change
                 this.doublons = this.doublons.filter(x => x.matchId !== bet.matchId && x.betCode !== bet.betCode);
                 this.sendBetToServer(bet.betActionSerieId, amountToBet, oddValue, true);
@@ -246,7 +272,7 @@ class App {
                 return;
             }
             try {
-                console.log('click on odd ...');
+                this.addLog('click on odd ...');
                 if (await page.$(buttonSelector) === null) {
                     await this.timeout(5000);
                 }
@@ -256,17 +282,17 @@ class App {
                 await this.logError(e);
             }
             try {
-                console.log('enter amount ...' + amountToBet);
+                this.addLog('enter amount ...' + amountToBet);
                 await this.selectorTypeValue(page, 'app-betting-slip-single-bet-item > div > app-betting-slip-single-bet-item-footer > div > div > app-bs-stake > div > input', amountToBet);
             } catch (e) {
                 await this.logError(e);
             }
             if (await page.$('bc-gb-cookie-banner > div > div > button') !== null) {
-                console.log('click remove cookie ...');
+                this.addLog('click remove cookie ...');
                 await this.selectorClick(page, 'bc-gb-cookie-banner > div > div > button');
             }
             try {
-                console.log('click on bet button ...');
+                this.addLog('click on bet button ...');
                 await this.selectorClick(page, '#betBtn');
                 await this.timeout(2000);
             } catch (e) {
@@ -274,7 +300,7 @@ class App {
             }
             const closeConfirmationBetButton = '#closeBetConfirmation';
             if (await page.$(closeConfirmationBetButton) !== null) {
-                console.log('click on close confirmation bet ...');
+                this.addLog('click on close confirmation bet ...');
                 await this.selectorClick(page, closeConfirmationBetButton);
                 this.sendBetToServer(bet.betActionSerieId, amountToBet, oddValue, false);
             } else {
@@ -283,7 +309,7 @@ class App {
             }
         } else {
             this.sendBetToServer(bet.betActionSerieId, 0, 0, true);
-            console.log(bet.matchName + ' is not available on betclic : ' + page.url());
+            this.addLog(bet.matchName + ' is not available on betclic : ' + page.url());
         }
         this.endBetting(page);
     }
@@ -297,6 +323,14 @@ class App {
         await page.goto('about:blank');
         await page.close();
         await this.stopAllRecord();
+        // region slack
+        await SlackService.sendMessage(this.slackCurrentLog, this.slackCurrentChannel);
+        // https://api.slack.com/docs/rate-limits
+        await this.timeout(1000);
+        if (this.slackCurrentChannel === process.env.SLACK_CHANNEL_SUCCESS_DETAIL_ID) {
+            await SlackService.sendMessage(this.slackCurrentMatchName, process.env.SLACK_CHANNEL_SUCCESS_ID);
+        }
+        // endregion
         this.bet();
     }
 
@@ -304,7 +338,7 @@ class App {
         let buttonSelector;
         const indexBet = await this.getIndexOfBet(page, betName);
         if (indexBet === null) {
-            console.log('Error : no bet.betName defined for ' + betName);
+            this.addLog('Error : no bet.betName defined for ' + betName);
         } else {
             buttonSelector = this.listBetSelector + '(' + indexBet + ') > div > sports-markets-single-market-selections-group > div > ';
             if (choiceName.toLowerCase() === '%1%') {
@@ -312,7 +346,7 @@ class App {
             } else if (choiceName.toLowerCase() === '%2%') {
                 buttonSelector += 'div:nth-child(2) > sports-selections-selection > div > span';
             } else {
-                console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
+                this.addLog('Error : no bet.choiceName defined for ' + choiceName + ' and ' + betName);
             }
         }
         return buttonSelector;
@@ -322,7 +356,7 @@ class App {
         let buttonSelector;
         const indexBet = await this.getIndexOfBet(page, betName);
         if (indexBet === null) {
-            console.log('Error : no bet.betName defined for ' + betName);
+            this.addLog('Error : no bet.betName defined for ' + betName);
         } else {
             buttonSelector = this.listBetSelector + '(' + indexBet + ') > div > sports-markets-single-market-selections-group > div > ';
             if (choiceName.toLowerCase() === '%1%') {
@@ -332,7 +366,7 @@ class App {
             } else if (choiceName.toLowerCase() === 'nul') {
                 buttonSelector += 'div:nth-child(2) > sports-selections-selection > div > span';
             } else {
-                console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
+                this.addLog('Error : no bet.choiceName defined for ' + choiceName + ' and ' + betName);
             }
         }
         return buttonSelector;
@@ -342,7 +376,7 @@ class App {
         let buttonSelector;
         const indexBet = await this.getIndexOfBet(page, betName);
         if (indexBet === null) {
-            console.log('Error : no bet.betName defined for ' + betName);
+            this.addLog('Error : no bet.betName defined for ' + betName);
         } else {
             buttonSelector = this.listBetSelector + '(' + indexBet + ') > div > sports-markets-single-market-selections-group > div > ';
             if (choiceName.toLowerCase() === '%1% ou Nul'.toLowerCase()) {
@@ -352,7 +386,7 @@ class App {
             } else if (choiceName.toLowerCase() === '%1% ou %2%'.toLowerCase()) {
                 buttonSelector += 'div:nth-child(2) > sports-selections-selection > div > span';
             } else {
-                console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
+                this.addLog('Error : no bet.choiceName defined for ' + choiceName + ' and ' + betName);
             }
         }
         return buttonSelector;
@@ -362,7 +396,7 @@ class App {
         let buttonSelector;
         const indexBet = await this.getIndexOfBet(page, betName);
         if (indexBet === null) {
-            console.log('Error : no bet.betName defined for ' + betName);
+            this.addLog('Error : no bet.betName defined for ' + betName);
         } else {
             buttonSelector = this.listBetSelector + '(' + indexBet + ') > div';
             let showMorebuttonSelector = buttonSelector + ' > sports-markets-single-market-selections-group > div.seeMoreButton.prebootFreeze.ng-star-inserted';
@@ -371,7 +405,7 @@ class App {
             }
             const indexChoice = await this.getIndexOfChoice(page, buttonSelector, choiceName);
             if (indexChoice === null) {
-                console.log('Error : no bet.choiceName defined for ' + choiceName);
+                this.addLog('Error : no bet.choiceName defined for ' + choiceName);
             } else {
                 buttonSelector += ' > sports-markets-single-market-selections-group > div.marketBox_body.is-2col.ng-star-inserted > div:nth-child(' + indexChoice + ') > sports-selections-selection > div > span';
             }
@@ -384,7 +418,7 @@ class App {
         const betNameTmp = (await this.getTextFromSelector(page, selectorTmp)).trim();
         let buttonSelector;
         if (betName.toLowerCase().trim() !== betNameTmp.toLowerCase()) {
-            console.log('Error : no bet.betName defined for ' + betName);
+            this.addLog('Error : no bet.betName defined for ' + betName);
         } else {
             buttonSelector = this.listBetSelectorDoubleChanceFoot + ' > div > div.marketBox_body.ng-star-inserted >';
             if (choiceName.toLowerCase() === '%1% ou Nul'.toLowerCase()) {
@@ -394,7 +428,7 @@ class App {
             } else if (choiceName.toLowerCase() === '%1% ou %2%'.toLowerCase()) {
                 buttonSelector += 'div:nth-child(3) > div.marketBox_list > div:nth-child(1) > sports-selections-selection';
             } else {
-                console.log('Error : no bet.choiceName defined for ' + bet.choiceName + ' and ' + bet.betCode);
+                this.addLog('Error : no bet.choiceName defined for ' + choiceName + ' and ' + betName);
             }
         }
         return buttonSelector;
@@ -427,9 +461,10 @@ class App {
     }
 
     async logError(error) {
-        console.log('==============================================================================');
-        console.log(error);
-        console.log('==============================================================================');
+        this.slackCurrentChannel = process.env.SLACK_CHANNEL_ERROR_ID;
+        this.addLog('==============================================================================');
+        this.addLog(error);
+        this.addLog('==============================================================================');
 
         try {
             const okButton = '#action';
@@ -437,15 +472,15 @@ class App {
                 if (await page.waitForSelector(okButton, {timeout: 2000})) {
                     await this.selectorClick(page, okButton);
                     await this.timeout(2000);
-                    console.log('==============================================================================');
-                    console.log('Ok button found after error');
-                    console.log('==============================================================================');
+                    this.addLog('==============================================================================');
+                    this.addLog('Ok button found after error');
+                    this.addLog('==============================================================================');
                 }
             }
         } catch (e) {
-            console.log('==============================================================================');
-            console.log('button ok not found after logging error');
-            console.log('==============================================================================');
+            this.addLog('==============================================================================');
+            this.addLog('button ok not found after logging error');
+            this.addLog('==============================================================================');
         }
     }
 
@@ -457,7 +492,7 @@ class App {
 
     async clearPanier(page) {
         try {
-            console.log("Nettoyage panier");
+            this.addLog("Nettoyage panier");
             const deletePanierButton = 'div.bettingslip_headerDelete > div > button';
             if (await this.selectorVisible(page, deletePanierButton)) {
                 await this.selectorClick(page, deletePanierButton);
@@ -466,12 +501,12 @@ class App {
                     await this.selectorClick(page, supprimerButton);
                 }
             }
-            console.log("Panier supprimé");
+            this.addLog("Panier supprimé");
             await this.timeout(2000);
         } catch (e) {
-            console.log('==============================================================================');
-            console.log(e);
-            console.log('==============================================================================');
+            this.addLog('==============================================================================');
+            this.addLog(e);
+            this.addLog('==============================================================================');
         }
     }
 
@@ -482,12 +517,12 @@ class App {
             await page.addScriptTag({path: 'lib/jquery-3.4.1.min.js'});
         }
         if (await this.isLogin(page)) {
-            console.log('already logging');
+            this.addLog('already logging');
             return page;
         }
         let previousUrl = page.url();
         let hasReturnUrl = false;
-        console.log('not logging yet, go to login page');
+        this.addLog('not logging yet, go to login page');
         await this.timeout(1000);
         await this.deletePopUp(page);
         await page.goto('https://www.betclic.fr/connexion');
@@ -498,7 +533,7 @@ class App {
         await this.selectorTypeValue(page, '#date', process.env.LOGIN_DAY + process.env.LOGIN_MONTH + process.env.LOGIN_YEAR);
         await this.deletePopUp(page);
         await this.selectorClick(page, 'login-page > div > div > div.container_content > div.box > div.box_content > login-form > form > div.buttonWrapper > button');
-        console.log('logging done !');
+        this.addLog('logging done !');
         await this.timeout(2000);
         try {
             const okButton = '#action';
@@ -506,8 +541,8 @@ class App {
                 if (await page.waitForSelector(okButton, {timeout: 2000})) {
                     await this.selectorClick(page, okButton);
                     await this.timeout(2000);
-                    console.log('Ok button found after login');
-                    console.log('page going to ' + returnUrl);
+                    this.addLog('Ok button found after login');
+                    this.addLog('page going to ' + returnUrl);
                     hasReturnUrl = true;
                     await page.goto(returnUrl, {
                         waitUntil: ['load', 'networkidle0', 'domcontentloaded', 'networkidle2'],
@@ -522,13 +557,13 @@ class App {
                 if (await page.waitForSelector(okButton2, {timeout: 2000})) {
                     await this.selectorClick(page, okButton2);
                     await this.timeout(2000);
-                    console.log('Ok button found after login');
+                    this.addLog('Ok button found after login');
                 }
             }
         } catch (e) {
-            console.log('==============================================================================');
-            console.log('button ok not found after logging error');
-            console.log('==============================================================================');
+            this.addLog('==============================================================================');
+            this.addLog('button ok not found after logging error');
+            this.addLog('==============================================================================');
         }
         if (hasReturnUrl === false) {
             await page.goto(previousUrl, {
@@ -551,7 +586,7 @@ class App {
         await page.evaluate((selector) => {
             const elements = document.querySelectorAll(selector);
             for (let i = 0; i < elements.length; i++) {
-                console.log("Pop up deleted");
+                this.addLog("Pop up deleted");
                 elements[i].parentNode.removeChild(elements[i]);
             }
         }, popUpSelector)
