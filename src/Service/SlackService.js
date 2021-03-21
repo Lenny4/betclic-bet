@@ -1,4 +1,6 @@
 const superagent = require('superagent');
+const {WebClient, LogLevel} = require("@slack/web-api");
+const fs = require('fs');
 
 module.exports = {
     sendMessage: async function sendMessage(message, channel) {
@@ -29,5 +31,28 @@ module.exports = {
                 resolve(true);
             }
         });
+    },
+
+    // https://api.slack.com/methods/files.upload/code
+    sendFile: async function sendFile(filePath, channel) {
+        if (process.env.SLACK_ACTIVE !== '1') {
+            return;
+        }
+        const client = new WebClient(process.env.SLACK_BOT_TOKEN, {
+            // LogLevel can be imported and used to make debugging simpler
+            logLevel: LogLevel.WARN
+        });
+        try {
+            // Call the files.upload method using the WebClient
+            const result = await client.files.upload({
+                // channels can be a list of one to many strings
+                channels: channel,
+                // Include your filename in a ReadStream here
+                file: fs.createReadStream(filePath)
+            });
+            console.log(filePath + ' uploaded');
+        } catch (error) {
+            console.error(error);
+        }
     },
 };

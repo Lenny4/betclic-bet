@@ -21,6 +21,8 @@
   },
   "homepage": "https://github.com/Lenny4/betclic-bet#readme",
   "dependencies": {
+    "@slack/bolt": "^3.3.0",
+    "@slack/web-api": "^6.1.0",
     "asciichart": "^1.5.25",
     "brain.js": "^2.0.0-beta.2",
     "clone": "^2.1.2",

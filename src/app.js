@@ -16,9 +16,12 @@ class App {
         this.loginForm = 'login-form';
         this.listBetSelector = 'div.verticalScroller_wrapper > div > div > sports-markets-single-market:nth-child';
         this.listBetSelectorDoubleChanceFoot = 'div.verticalScroller_wrapper > div > div > sports-markets-grouped-markets';
+        // region slack
         this.slackCurrentLog = '';
         this.slackCurrentChannel = process.env.SLACK_CHANNEL_SUCCESS_DETAIL_ID;
         this.slackCurrentMatchName = '';
+        this.slackCurrentVideoPath = null;
+        // endregion
     }
 
     async addBets(matchs) {
@@ -90,6 +93,7 @@ class App {
         this.slackCurrentChannel = process.env.SLACK_CHANNEL_SUCCESS_DETAIL_ID;
         this.slackCurrentLog = '';
         this.slackCurrentMatchName = bet.matchName;
+        this.slackCurrentVideoPath = null;
         // endregion
         await this.startRecord(bet.matchName, [this.convertDateToFolderName(new Date())]);
         this.addLog('is betting on ', bet);
@@ -329,6 +333,11 @@ class App {
         await this.timeout(1000);
         if (this.slackCurrentChannel === process.env.SLACK_CHANNEL_SUCCESS_DETAIL_ID) {
             await SlackService.sendMessage(this.slackCurrentMatchName, process.env.SLACK_CHANNEL_SUCCESS_ID);
+        }
+        // send video
+        if (this.slackCurrentChannel === process.env.SLACK_CHANNEL_ERROR_ID) {
+            // no await here file upload might take time
+            SlackService.sendFile(this.slackCurrentVideoPath, this.slackCurrentChannel);
         }
         // endregion
         this.bet();
@@ -665,6 +674,7 @@ class App {
                 console.log(stdout);
             }
         });
+        this.slackCurrentVideoPath = filePath;
         await this.timeout(1000);
         return filePath;
     }
