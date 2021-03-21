@@ -394,7 +394,9 @@ class App {
     }
 
     async getIndexOfBet(page, betName) {
-        for (let index = 0; index < 30; index++) {
+        const listBetSelectorParent = 'div.verticalScroller_wrapper > div > div';
+        const childrenLenght = await this.getChildrenLenght(page, listBetSelectorParent);
+        for (let index = 0; index < childrenLenght; index++) {
             const selectorTmp = this.listBetSelector + '(' + index + ') > div >  div.marketBox_head > h2';
             const betNameTmp = (await this.getTextFromSelector(page, selectorTmp)).trim();
             if (betName.toLowerCase().trim() === betNameTmp.toLowerCase()) {
@@ -405,7 +407,9 @@ class App {
     }
 
     async getIndexOfChoice(page, selector, choiceName) {
-        for (let index = 0; index < 20; index++) {
+        const listChoiceSelectorParent = selector + ' > sports-markets-single-market-selections-group > div.marketBox_body.is-2col.ng-star-inserted';
+        const childrenLenght = await this.getChildrenLenght(page, listChoiceSelectorParent);
+        for (let index = 0; index < childrenLenght; index++) {
             const selectorTmp = selector + ' > sports-markets-single-market-selections-group > div.marketBox_body.is-2col.ng-star-inserted > div:nth-child(' + index + ') > p';
             const choiceNameTmp = (await this.getTextFromSelector(page, selectorTmp)).trim();
             if (choiceNameTmp.toLowerCase() === choiceName.toLowerCase()) {
@@ -449,11 +453,11 @@ class App {
             console.log("Nettoyage panier");
             const deletePanierButton = 'div.bettingslip_headerDelete > div > button';
             if (await this.selectorVisible(page, deletePanierButton)) {
-                    await this.selectorClick(page, deletePanierButton);
-                    const supprimerButton = '#mat-dialog-0 > bcdk-mandatory-action-dialog > div > div.buttonWrapper.modal_footer > button:nth-child(2)';
-                    if (await this.selectorVisible(page, supprimerButton)) {
-                        await this.selectorClick(page, supprimerButton);
-                    }
+                await this.selectorClick(page, deletePanierButton);
+                const supprimerButton = '#mat-dialog-0 > bcdk-mandatory-action-dialog > div > div.buttonWrapper.modal_footer > button:nth-child(2)';
+                if (await this.selectorVisible(page, supprimerButton)) {
+                    await this.selectorClick(page, supprimerButton);
+                }
             }
             console.log("Panier supprimé");
             await this.timeout(2000);
@@ -552,7 +556,9 @@ class App {
 
     async selectorClick(page, selector) {
         await page.$eval(selector,
-            e => {e.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'end' })});
+            e => {
+                e.scrollIntoView({behavior: 'smooth', block: 'end', inline: 'end'})
+            });
         await page.$eval(selector, element => element.click());
         await this.timeout(500);
     }
@@ -561,6 +567,12 @@ class App {
         await this.deleteInputValue(page, selector);
         await page.type(selector, value.toString());
         await this.timeout(500);
+    }
+
+    async getChildrenLenght(page, selector) {
+        return await page.evaluate((selector) => {
+            return (Array.from(document.querySelector(selector).children).length);
+        }, selector);
     }
 
     async deleteInputValue(page, selector) {
