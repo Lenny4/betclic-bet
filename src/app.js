@@ -394,7 +394,7 @@ class App {
     }
 
     async getIndexOfBet(page, betName) {
-        for (let index = 0; index < 10; index++) {
+        for (let index = 0; index < 30; index++) {
             const selectorTmp = this.listBetSelector + '(' + index + ') > div >  div.marketBox_head > h2';
             const betNameTmp = (await this.getTextFromSelector(page, selectorTmp)).trim();
             if (betName.toLowerCase().trim() === betNameTmp.toLowerCase()) {
@@ -551,6 +551,8 @@ class App {
     }
 
     async selectorClick(page, selector) {
+        await page.$eval(selector,
+            e => {e.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'end' })});
         await page.$eval(selector, element => element.click());
         await this.timeout(500);
     }
