@@ -95,7 +95,7 @@ class App {
         this.slackCurrentMatchName = bet.matchName;
         this.slackCurrentVideoPath = null;
         // endregion
-        await this.startRecord(bet.matchName, [this.convertDateToFolderName(new Date())]);
+        await this.startRecord(bet.matchName + '-' + bet.betName + '-' + bet.choiceName, [this.convertDateToFolderName(new Date())]);
         this.addLog('is betting on ', bet);
         let page = await this.browser.newPage();
         this.addLog('start try, page created for bet');
@@ -348,6 +348,7 @@ class App {
         const indexBet = await this.getIndexOfBet(page, betName);
         if (indexBet === null) {
             this.addLog('Error : no bet.betName defined for ' + betName);
+            this.slackCurrentChannel = process.env.SLACK_CHANNEL_ERROR_ID;
         } else {
             buttonSelector = this.listBetSelector + '(' + indexBet + ') > div > sports-markets-single-market-selections-group > div > ';
             if (choiceName.toLowerCase() === '%1%') {
@@ -356,6 +357,7 @@ class App {
                 buttonSelector += 'div:nth-child(2) > sports-selections-selection > div > span';
             } else {
                 this.addLog('Error : no bet.choiceName defined for ' + choiceName + ' and ' + betName);
+                this.slackCurrentChannel = process.env.SLACK_CHANNEL_ERROR_ID;
             }
         }
         return buttonSelector;
@@ -366,6 +368,7 @@ class App {
         const indexBet = await this.getIndexOfBet(page, betName);
         if (indexBet === null) {
             this.addLog('Error : no bet.betName defined for ' + betName);
+            this.slackCurrentChannel = process.env.SLACK_CHANNEL_ERROR_ID;
         } else {
             buttonSelector = this.listBetSelector + '(' + indexBet + ') > div > sports-markets-single-market-selections-group > div > ';
             if (choiceName.toLowerCase() === '%1%') {
@@ -376,6 +379,7 @@ class App {
                 buttonSelector += 'div:nth-child(2) > sports-selections-selection > div > span';
             } else {
                 this.addLog('Error : no bet.choiceName defined for ' + choiceName + ' and ' + betName);
+                this.slackCurrentChannel = process.env.SLACK_CHANNEL_ERROR_ID;
             }
         }
         return buttonSelector;
@@ -386,6 +390,7 @@ class App {
         const indexBet = await this.getIndexOfBet(page, betName);
         if (indexBet === null) {
             this.addLog('Error : no bet.betName defined for ' + betName);
+            this.slackCurrentChannel = process.env.SLACK_CHANNEL_ERROR_ID;
         } else {
             buttonSelector = this.listBetSelector + '(' + indexBet + ') > div > sports-markets-single-market-selections-group > div > ';
             if (choiceName.toLowerCase() === '%1% ou Nul'.toLowerCase()) {
@@ -396,6 +401,7 @@ class App {
                 buttonSelector += 'div:nth-child(2) > sports-selections-selection > div > span';
             } else {
                 this.addLog('Error : no bet.choiceName defined for ' + choiceName + ' and ' + betName);
+                this.slackCurrentChannel = process.env.SLACK_CHANNEL_ERROR_ID;
             }
         }
         return buttonSelector;
@@ -406,6 +412,7 @@ class App {
         const indexBet = await this.getIndexOfBet(page, betName);
         if (indexBet === null) {
             this.addLog('Error : no bet.betName defined for ' + betName);
+            this.slackCurrentChannel = process.env.SLACK_CHANNEL_ERROR_ID;
         } else {
             buttonSelector = this.listBetSelector + '(' + indexBet + ') > div';
             let showMorebuttonSelector = buttonSelector + ' > sports-markets-single-market-selections-group > div.seeMoreButton.prebootFreeze.ng-star-inserted';
@@ -415,6 +422,7 @@ class App {
             const indexChoice = await this.getIndexOfChoice(page, buttonSelector, choiceName);
             if (indexChoice === null) {
                 this.addLog('Error : no bet.choiceName defined for ' + choiceName);
+                this.slackCurrentChannel = process.env.SLACK_CHANNEL_ERROR_ID;
             } else {
                 buttonSelector += ' > sports-markets-single-market-selections-group > div.marketBox_body.is-2col.ng-star-inserted > div:nth-child(' + indexChoice + ') > sports-selections-selection > div > span';
             }
@@ -428,6 +436,7 @@ class App {
         let buttonSelector;
         if (betName.toLowerCase().trim() !== betNameTmp.toLowerCase()) {
             this.addLog('Error : no bet.betName defined for ' + betName);
+            this.slackCurrentChannel = process.env.SLACK_CHANNEL_ERROR_ID;
         } else {
             buttonSelector = this.listBetSelectorDoubleChanceFoot + ' > div > div.marketBox_body.ng-star-inserted >';
             if (choiceName.toLowerCase() === '%1% ou Nul'.toLowerCase()) {
@@ -438,6 +447,7 @@ class App {
                 buttonSelector += 'div:nth-child(3) > div.marketBox_list > div:nth-child(1) > sports-selections-selection';
             } else {
                 this.addLog('Error : no bet.choiceName defined for ' + choiceName + ' and ' + betName);
+                this.slackCurrentChannel = process.env.SLACK_CHANNEL_ERROR_ID;
             }
         }
         return buttonSelector;
