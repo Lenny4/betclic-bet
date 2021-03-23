@@ -7,6 +7,7 @@ module.exports = {
         // https://api.slack.com/docs/rate-limits
         return new Promise(async (resolve) => {
             if (process.env.SLACK_ACTIVE === '1') {
+                console.log('SlackService sendMessage sending message to channel ' + channel);
                 superagent
                     .post('https://slack.com/api/chat.postMessage')
                     .send({
@@ -20,6 +21,7 @@ module.exports = {
                             console.log('ERROR: sendNotification status code : ' + res.statusCode);
                             resolve(false);
                         } else {
+                            console.log('SlackService sendMessage sended');
                             resolve(true);
                         }
                     })
@@ -28,6 +30,7 @@ module.exports = {
                         resolve(false);
                     });
             } else {
+                console.log('SlackService sendMessage not active');
                 resolve(true);
             }
         });
@@ -36,7 +39,10 @@ module.exports = {
     // https://api.slack.com/methods/files.upload/code
     sendFile: async function sendFile(filePath, channel) {
         if (process.env.SLACK_ACTIVE !== '1') {
+            console.log('SlackService sendFile not active');
             return;
+        } else {
+            console.log('SlackService sendFile to channel' + channel);
         }
         const client = new WebClient(process.env.SLACK_BOT_TOKEN, {
             // LogLevel can be imported and used to make debugging simpler
@@ -50,7 +56,7 @@ module.exports = {
                 // Include your filename in a ReadStream here
                 file: fs.createReadStream(filePath)
             });
-            console.log(filePath + ' uploaded');
+            console.log('SlackService sendFile ' + filePath + ' uploaded');
         } catch (error) {
             console.error(error);
         }
