@@ -661,6 +661,7 @@ class App {
     }
 
     async startRecord(name, folders) {
+        console.log('start recording ...');
         const mainFolder = this.videoFolder;
         let filePath = './' + mainFolder;
         if (!fs.existsSync(filePath)) {
@@ -674,7 +675,6 @@ class App {
                 }
             }
         }
-        console.log('start recording ...');
         filePath = filePath + "/" + slugify(name) + ".avi";
         // https://unix.stackexchange.com/questions/14979/how-to-record-my-full-screen-with-audio
         exec("ffmpeg -f x11grab -s `xdpyinfo | grep -i dimensions: | sed 's/[^0-9]*pixels.*(.*).*//' | sed 's/[^0-9x]*//'` -r 25 -i " + process.env.DISPLAY + " -qscale 0 " + filePath, (err, stdout, stderr) => {
