@@ -317,6 +317,7 @@ class App {
         } else {
             this.sendBetToServer(bet.betActionSerieId, 0, 0, true);
             this.addLog(bet.matchName + ' is not available on betclic : ' + page.url());
+            this.slackCurrentChannel = process.env.SLACK_CHANNEL_ERROR_ID;
         }
         this.endBetting(page);
     }
