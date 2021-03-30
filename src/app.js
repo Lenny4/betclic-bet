@@ -106,6 +106,7 @@ class App {
             // Remove the timeout
             timeout: 0
         });
+        await this.closeCookiePopUp(page);
         await page.addScriptTag({path: 'lib/jquery-3.4.1.min.js'});
         this.addLog('page before login');
         page = await this.login(page, url);
@@ -691,6 +692,17 @@ class App {
         this.slackCurrentVideoPath = filePath;
         await this.timeout(1000);
         return filePath;
+    }
+
+    async closeCookiePopUp(page) {
+        try {
+            await page.waitForSelector('#popin_tc_privacy_button_2', {
+                timeout: 2000
+            });
+            await page.click('#popin_tc_privacy_button_2');
+        } catch (e) {
+            // nothing
+        }
     }
 
     deleteOldVideos(maxDaysToKeep) {
