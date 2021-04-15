@@ -252,6 +252,11 @@ class App {
                 buttonSelector = await this.getResultSelectorToBet(page, bet.betName, bet.choiceName);
             }
 
+            // Nombre total de buts (Hand-ball)
+            if (bet.betCode === 'Hdb_Tgt') {
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
+            }
+
             // -------------------
 
             if (buttonSelector == null) {
