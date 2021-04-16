@@ -19,6 +19,7 @@ class App {
         // region slack
         this.slackCurrentLog = '';
         this.slackCurrentChannel = process.env.SLACK_CHANNEL_SUCCESS_DETAIL_ID;
+        this.slackMessageDisplay = '';
         this.slackCurrentMatchName = '';
         this.slackCurrentVideoPath = null;
         // endregion
@@ -91,6 +92,7 @@ class App {
         const bet = this.bets[0];
         // region slack
         this.slackCurrentChannel = process.env.SLACK_CHANNEL_SUCCESS_DETAIL_ID;
+        this.slackMessageDisplay = '';
         this.slackCurrentLog = '';
         this.slackCurrentMatchName = bet.matchName;
         this.slackCurrentVideoPath = null;
@@ -260,27 +262,33 @@ class App {
             // -------------------
 
             if (buttonSelector == null) {
-                this.addLog("Le paris n'a pas été trouvé");
+                const errorMessage = "Le paris n'a pas été trouvé";
+                this.addLog(errorMessage);
                 this.sendBetToServer(bet.betActionSerieId, 0, 0, true);
-                this.slackCurrentChannel = process.env.SLACK_CHANNEL_ERROR_ID;
+                this.slackCurrentChannel = process.env.SLACK_CHANNEL_SUCCESS_ID;
+                this.slackMessageDisplay = ": " + errorMessage;
                 this.endBetting(page);
                 return;
             }
             const oddValue = parseFloat((await this.getTextFromSelector(page, buttonSelector)).trim().replace(',', '.'));
             if (oddValue < 1.1) {
-                this.addLog('Impossible de parier sur une côte inférieure à 1.1 sur betclic');
+                const errorMessage = 'Impossible de parier sur une côte inférieure à 1.1 sur betclic';
+                this.addLog(errorMessage);
                 this.sendBetToServer(bet.betActionSerieId, 0, oddValue, true);
-                this.slackCurrentChannel = process.env.SLACK_CHANNEL_ERROR_ID;
+                this.slackCurrentChannel = process.env.SLACK_CHANNEL_SUCCESS_ID;
+                this.slackMessageDisplay = ": " + errorMessage;
                 this.endBetting(page);
                 return;
             }
             let amountToBet = this.getAmountToBet(bet.amountToWin, oddValue);
             if (oddValue > bet.maxOdd) {
-                this.addLog('Odd value ' + oddValue + ' to bet is greater than max odd ' + bet.maxOdd);
+                const errorMessage = 'Cote ' + oddValue + ' trop élevé par rapport à ' + bet.maxOdd + ' qui était attendu';
+                this.addLog(errorMessage);
                 // Cas particulier pour permettre de parier dessus plus tard si l'heure change
                 this.doublons = this.doublons.filter(x => x.matchId !== bet.matchId && x.betCode !== bet.betCode);
                 this.sendBetToServer(bet.betActionSerieId, amountToBet, oddValue, true);
-                this.slackCurrentChannel = process.env.SLACK_CHANNEL_ERROR_ID;
+                this.slackCurrentChannel = process.env.SLACK_CHANNEL_SUCCESS_ID;
+                this.slackMessageDisplay = ": " + errorMessage;
                 this.endBetting(page);
                 return;
             }
@@ -342,7 +350,11 @@ class App {
         // https://api.slack.com/docs/rate-limits
         await this.timeout(1000);
         if (this.slackCurrentChannel === process.env.SLACK_CHANNEL_SUCCESS_DETAIL_ID) {
-            await SlackService.sendMessage(this.slackCurrentMatchName, process.env.SLACK_CHANNEL_SUCCESS_ID);
+            let message = this.slackCurrentMatchName;
+            if(this.slackMessageDisplay !== '') {
+                message += this.slackMessageDisplay;
+            }
+            await SlackService.sendMessage(message, process.env.SLACK_CHANNEL_SUCCESS_ID);
         }
         // send video
         if (this.slackCurrentChannel === process.env.SLACK_CHANNEL_ERROR_ID) {
