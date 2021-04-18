@@ -265,7 +265,6 @@ class App {
                 const errorMessage = "Le paris n'a pas été trouvé";
                 this.addLog(errorMessage);
                 this.sendBetToServer(bet.betActionSerieId, 0, 0, true);
-                this.slackCurrentChannel = process.env.SLACK_CHANNEL_SUCCESS_ID;
                 this.slackMessageDisplay = ": " + errorMessage;
                 this.endBetting(page);
                 return;
@@ -275,7 +274,6 @@ class App {
                 const errorMessage = 'Impossible de parier sur une côte inférieure à 1.1 sur betclic';
                 this.addLog(errorMessage);
                 this.sendBetToServer(bet.betActionSerieId, 0, oddValue, true);
-                this.slackCurrentChannel = process.env.SLACK_CHANNEL_SUCCESS_ID;
                 this.slackMessageDisplay = ": " + errorMessage;
                 this.endBetting(page);
                 return;
@@ -287,7 +285,6 @@ class App {
                 // Cas particulier pour permettre de parier dessus plus tard si l'heure change
                 this.doublons = this.doublons.filter(x => x.matchId !== bet.matchId && x.betCode !== bet.betCode);
                 this.sendBetToServer(bet.betActionSerieId, amountToBet, oddValue, true);
-                this.slackCurrentChannel = process.env.SLACK_CHANNEL_SUCCESS_ID;
                 this.slackMessageDisplay = ": " + errorMessage;
                 this.endBetting(page);
                 return;
