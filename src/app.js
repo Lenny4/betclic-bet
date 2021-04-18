@@ -153,6 +153,10 @@ class App {
             if (bet.betCode === 'Ftb_5') {
                 buttonSelector = await this.getWinnerSelectorToBet(page, bet.betName, bet.choiceName);
             }
+            // Ecart de buts
+            if (bet.betCode === 'Ftb_23') {
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
+            }
 
             // ------------------- TENNIS
 
@@ -234,6 +238,10 @@ class App {
             // Double chance
             if (bet.betCode === 'Ihk_Dbc') {
                 buttonSelector = await this.getDoubleChanceSelectorToBet(page, bet.betName, bet.choiceName);
+            }
+            // Ecart de buts
+            if (bet.betCode === 'Ihk_Han') {
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
             }
 
             // ------------------- RUGBY
