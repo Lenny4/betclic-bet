@@ -20,7 +20,7 @@ class App {
         this.slackCurrentLog = '';
         this.slackCurrentChannel = process.env.SLACK_CHANNEL_SUCCESS_DETAIL_ID;
         this.slackMessageDisplay = '';
-        this.slackCurrentMatchName = '';
+        this.currentMatchName = '';
         this.slackCurrentVideoPath = null;
         // endregion
     }
@@ -94,7 +94,7 @@ class App {
         this.slackCurrentChannel = process.env.SLACK_CHANNEL_SUCCESS_DETAIL_ID;
         this.slackMessageDisplay = '';
         this.slackCurrentLog = '';
-        this.slackCurrentMatchName = bet.matchName;
+        this.currentMatchName = bet.matchName;
         this.slackCurrentVideoPath = null;
         // endregion
         await this.startRecord(bet.matchName + '-' + bet.betName + '-' + bet.choiceName, [this.convertDateToFolderName(new Date())]);
@@ -355,7 +355,7 @@ class App {
         // https://api.slack.com/docs/rate-limits
         await this.timeout(1000);
         if (this.slackCurrentChannel === process.env.SLACK_CHANNEL_SUCCESS_DETAIL_ID) {
-            let message = this.slackCurrentMatchName;
+            let message = this.currentMatchName;
             if(this.slackMessageDisplay !== '') {
                 message += this.slackMessageDisplay;
             }
@@ -446,12 +446,12 @@ class App {
             if (await page.$(showMorebuttonSelector) !== null) {
                 await this.selectorClick(page, showMorebuttonSelector);
             }
-            const indexChoice = await this.getIndexOfChoice(page, buttonSelector, choiceName);
-            if (indexChoice === null) {
+            const selectorChoice = await this.getIndexOfChoice(page, buttonSelector, choiceName);
+            if (selectorChoice === null) {
                 this.addLog('Error : no bet.choiceName defined for ' + choiceName);
                 this.slackCurrentChannel = process.env.SLACK_CHANNEL_ERROR_ID;
             } else {
-                buttonSelector += ' > sports-markets-single-market-selections-group > div.marketBox_body.is-2col.ng-star-inserted > div:nth-child(' + indexChoice + ') > sports-selections-selection > div > span';
+                buttonSelector = selectorChoice + ' > sports-selections-selection > div > span';
             }
         }
         return buttonSelector;
@@ -494,16 +494,30 @@ class App {
     }
 
     async getIndexOfChoice(page, selector, choiceName) {
-        const listChoiceSelectorParent = selector + ' > sports-markets-single-market-selections-group > div.marketBox_body.is-2col.ng-star-inserted';
-        const childrenLenght = await this.getChildrenLenght(page, listChoiceSelectorParent);
+        let listChoiceSelectorParent = selector + ' > sports-markets-single-market-selections-group > div.marketBox_body.is-2col.ng-star-inserted';
+        let childrenLenght = await this.getChildrenLenght(page, listChoiceSelectorParent);
+        if(childrenLenght === 0) {
+            listChoiceSelectorParent = selector + ' > sports-markets-single-market-selections-group > div.marketBox_body.is-spacious.ng-star-inserted';
+            childrenLenght = await this.getChildrenLenght(page, listChoiceSelectorParent);
+        }
         for (let index = 0; index < childrenLenght; index++) {
-            const selectorTmp = selector + ' > sports-markets-single-market-selections-group > div.marketBox_body.is-2col.ng-star-inserted > div:nth-child(' + index + ') > p';
-            const choiceNameTmp = (await this.getTextFromSelector(page, selectorTmp)).trim();
-            if (choiceNameTmp.toLowerCase() === choiceName.toLowerCase()) {
-                return index;
+            const selectorTmp = listChoiceSelectorParent + ' > div:nth-child(' + index + ')';
+            const choiceNameTmp = (await this.getTextFromSelector(page, selectorTmp + ' > p')).trim();
+            if (choiceNameTmp.toLowerCase() === this.replaceMathBetName(choiceName).toLowerCase()) {
+                return selectorTmp;
             }
         }
         return null;
+    }
+
+    replaceMathBetName(choiceName) {
+        let matchNameArray = this.currentMatchName.split(" - ");
+        if(matchNameArray.length !== 2) {
+            return choiceName;
+        }
+        choiceName = choiceName.replace("%1%", matchNameArray[0]);
+        choiceName = choiceName.replace("%2%", matchNameArray[1]);
+        return choiceName;
     }
 
     async logError(error) {
@@ -531,6 +545,13 @@ class App {
     }
 
     async getTextFromSelector(page, selector) {
+        if (await this.selectorVisible(page, selector)) {
+            await page.$eval(selector,
+                e => {
+                    e.scrollIntoView({behavior: 'smooth', block: 'end', inline: 'end'})
+                });
+            await this.timeout(300);
+        }
         return await page.evaluate((selector) => {
             return $(selector).text();
         }, selector);
@@ -658,7 +679,17 @@ class App {
     }
 
     async getChildrenLenght(page, selector) {
+        if (await this.selectorVisible(page, selector)) {
+            await page.$eval(selector,
+                e => {
+                    e.scrollIntoView({behavior: 'smooth', block: 'end', inline: 'end'})
+                });
+            await this.timeout(300);
+        }
         return await page.evaluate((selector) => {
+            if (document.querySelector(selector) === null) {
+                return 0;
+            }
             return (Array.from(document.querySelector(selector).children).length);
         }, selector);
     }
