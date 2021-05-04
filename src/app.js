@@ -510,8 +510,10 @@ class App {
         return null;
     }
 
-    replaceMathBetName(choiceName) {
-        let matchNameArray = this.currentMatchName.split(" - ");
+    async replaceMathBetName(page, choiceName) {
+        const pageTitle = await page.title();
+        const pageTitleSplitted = pageTitle.slice('Parier sur '.length).split(' | ');
+        const matchNameArray = pageTitleSplitted[0].split(" - ");
         if(matchNameArray.length !== 2) {
             return choiceName;
         }
