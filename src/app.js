@@ -135,7 +135,7 @@ class App {
 
             // Résultat du match Foot -> %1% ou nul ou %2%
             if (bet.betCode === 'Ftb_Mr3') {
-                buttonSelector = await this.getResultSelectorToBet(page, bet.betName, bet.choiceName);
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
             }
             // But pour les 2 équipes -> Oui ou Non
             if (bet.betCode === 'Ftb_Bts') {
@@ -147,11 +147,11 @@ class App {
             }
             // Double chance
             if (bet.betCode === 'Ftb_Dbc') {
-                buttonSelector = await this.getDoubleChanceFootSelectorToBet(page, bet.betName, bet.choiceName);
+                buttonSelector = await this.getDoubleChanceSelectorToBet(page, bet.betName, bet.choiceName);
             }
             // Résultat du match (Remboursé si match nul)
             if (bet.betCode === 'Ftb_5') {
-                buttonSelector = await this.getWinnerSelectorToBet(page, bet.betName, bet.choiceName);
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
             }
             // Ecart de buts
             if (bet.betCode === 'Ftb_23') {
@@ -162,7 +162,7 @@ class App {
 
             // Vainqueur du match Tennis -> %1% ou %2%
             if (bet.betCode === 'Ten_Mr2') {
-                buttonSelector = await this.getWinnerSelectorToBet(page, bet.betName, bet.choiceName);
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
             }
             // Score final (Set) Tennis
             if (bet.betCode === 'Ten_Set') {
@@ -185,18 +185,18 @@ class App {
             }
             // Vainqueur du match
             if (bet.betCode === 'Bsb_Mwi') {
-                buttonSelector = await this.getWinnerSelectorToBet(page, bet.betName, bet.choiceName);
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
             }
 
             // ------------------- BASKETBALL
 
             // Vainqueur du match (Basket)
             if (bet.betCode === 'Bkb_Mr6') {
-                buttonSelector = await this.getWinnerSelectorToBet(page, bet.betName, bet.choiceName);
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
             }
             // Résultat du match (Basket)
             if (bet.betCode === 'Bkb_Mrs') {
-                buttonSelector = await this.getResultSelectorToBet(page, bet.betName, bet.choiceName);
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
             }
             // Nombre total de points (Bkb_Tpt)
             if (bet.betCode === 'Bkb_Tpt') {
@@ -207,7 +207,7 @@ class App {
 
             // Vainqueur du match (Volley)
             if (bet.betCode === 'Vlb_Mr2') {
-                buttonSelector = await this.getWinnerSelectorToBet(page, bet.betName, bet.choiceName);
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
             }
             // Vainqueur du match (Volley)
             if (bet.betCode === 'Vlb_Tpt') {
@@ -218,14 +218,14 @@ class App {
 
             // Vainqueur du match (Snooker)
             if (bet.betCode === 'Snk_Mr2') {
-                buttonSelector = await this.getWinnerSelectorToBet(page, bet.betName, bet.choiceName);
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
             }
 
             // ------------------- HOCKEY
 
             // Résultat (Hockey)
             if (bet.betCode === 'Ihk_Mrs') {
-                buttonSelector = await this.getResultSelectorToBet(page, bet.betName, bet.choiceName);
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
             }
             // Nombre total de but
             if (bet.betCode === 'Ihk_TglM') {
@@ -233,7 +233,7 @@ class App {
             }
             // Vainqueur du match
             if (bet.betCode === 'Ihk_Mnl') {
-                buttonSelector = await this.getWinnerSelectorToBet(page, bet.betName, bet.choiceName);
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
             }
             // Double chance
             if (bet.betCode === 'Ihk_Dbc') {
@@ -248,7 +248,7 @@ class App {
 
             // Résultat (Rugby)
             if (bet.betCode === 'Rgb_Mr3') {
-                buttonSelector = await this.getResultSelectorToBet(page, bet.betName, bet.choiceName);
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
             }
             // Nombre de points (Rugby)
             if (bet.betCode === 'Rgb_Tpt') {
@@ -259,7 +259,7 @@ class App {
 
             // Résultat (Hand-ball)
             if (bet.betCode === 'Hdb_Mr2') {
-                buttonSelector = await this.getResultSelectorToBet(page, bet.betName, bet.choiceName);
+                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
             }
 
             // Nombre total de buts (Hand-ball)
@@ -370,70 +370,6 @@ class App {
         this.bet();
     }
 
-    async getWinnerSelectorToBet(page, betName, choiceName) {
-        let buttonSelector;
-        const indexBet = await this.getIndexOfBet(page, betName);
-        if (indexBet === null) {
-            this.addLog('Error : no bet.betName defined for ' + betName);
-            this.slackCurrentChannel = process.env.SLACK_CHANNEL_ERROR_ID;
-        } else {
-            buttonSelector = this.listBetSelector + '(' + indexBet + ') > div > sports-markets-single-market-selections-group > div > ';
-            if (choiceName.toLowerCase() === '%1%') {
-                buttonSelector += 'div:nth-child(1) > sports-selections-selection > div > span';
-            } else if (choiceName.toLowerCase() === '%2%') {
-                buttonSelector += 'div:nth-child(2) > sports-selections-selection > div > span';
-            } else {
-                this.addLog('Error : no bet.choiceName defined for ' + choiceName + ' and ' + betName);
-                this.slackCurrentChannel = process.env.SLACK_CHANNEL_ERROR_ID;
-            }
-        }
-        return buttonSelector;
-    }
-
-    async getResultSelectorToBet(page, betName, choiceName) {
-        let buttonSelector;
-        const indexBet = await this.getIndexOfBet(page, betName);
-        if (indexBet === null) {
-            this.addLog('Error : no bet.betName defined for ' + betName);
-            this.slackCurrentChannel = process.env.SLACK_CHANNEL_ERROR_ID;
-        } else {
-            buttonSelector = this.listBetSelector + '(' + indexBet + ') > div > sports-markets-single-market-selections-group > div > ';
-            if (choiceName.toLowerCase() === '%1%') {
-                buttonSelector += 'div:nth-child(1) > sports-selections-selection > div > span';
-            } else if (choiceName.toLowerCase() === '%2%') {
-                buttonSelector += 'div:nth-child(3) > sports-selections-selection > div > span';
-            } else if (choiceName.toLowerCase() === 'nul') {
-                buttonSelector += 'div:nth-child(2) > sports-selections-selection > div > span';
-            } else {
-                this.addLog('Error : no bet.choiceName defined for ' + choiceName + ' and ' + betName);
-                this.slackCurrentChannel = process.env.SLACK_CHANNEL_ERROR_ID;
-            }
-        }
-        return buttonSelector;
-    }
-
-    async getDoubleChanceSelectorToBet(page, betName, choiceName) {
-        let buttonSelector;
-        const indexBet = await this.getIndexOfBet(page, betName);
-        if (indexBet === null) {
-            this.addLog('Error : no bet.betName defined for ' + betName);
-            this.slackCurrentChannel = process.env.SLACK_CHANNEL_ERROR_ID;
-        } else {
-            buttonSelector = this.listBetSelector + '(' + indexBet + ') > div > sports-markets-single-market-selections-group > div > ';
-            if (choiceName.toLowerCase() === '%1% ou Nul'.toLowerCase()) {
-                buttonSelector += 'div:nth-child(1) > sports-selections-selection > div > span';
-            } else if (choiceName.toLowerCase() === 'Nul ou %2%'.toLowerCase()) {
-                buttonSelector += 'div:nth-child(3) > sports-selections-selection > div > span';
-            } else if (choiceName.toLowerCase() === '%1% ou %2%'.toLowerCase()) {
-                buttonSelector += 'div:nth-child(2) > sports-selections-selection > div > span';
-            } else {
-                this.addLog('Error : no bet.choiceName defined for ' + choiceName + ' and ' + betName);
-                this.slackCurrentChannel = process.env.SLACK_CHANNEL_ERROR_ID;
-            }
-        }
-        return buttonSelector;
-    }
-
     async getSelectorToBet(page, betName, choiceName) {
         let buttonSelector;
         const indexBet = await this.getIndexOfBet(page, betName);
@@ -457,7 +393,7 @@ class App {
         return buttonSelector;
     }
 
-    async getDoubleChanceFootSelectorToBet(page, betName, choiceName) {
+    async getDoubleChanceSelectorToBet(page, betName, choiceName) {
         let selectorTmp = this.listBetSelectorDoubleChanceFoot + ' > div > div.marketBox_head > h2';
         const betNameTmp = (await this.getTextFromSelector(page, selectorTmp)).trim();
         let buttonSelector;
@@ -482,8 +418,11 @@ class App {
 
     async getIndexOfBet(page, betName) {
         const listBetSelectorParent = 'div.verticalScroller_wrapper > div > div';
+        // plusieurs appels necessaire pour load toute la page
+        await this.scrollToSelector(page, listBetSelectorParent);
+        await this.scrollToSelector(page, listBetSelectorParent);
         const childrenLenght = await this.getChildrenLenght(page, listBetSelectorParent);
-        for (let index = 0; index < childrenLenght; index++) {
+        for (let index = 1; index < childrenLenght; index++) {
             const selectorTmp = this.listBetSelector + '(' + index + ') > div >  div.marketBox_head > h2';
             const betNameTmp = (await this.getTextFromSelector(page, selectorTmp)).trim();
             if (betName.toLowerCase().trim() === betNameTmp.toLowerCase()) {
@@ -500,10 +439,15 @@ class App {
             listChoiceSelectorParent = selector + ' > sports-markets-single-market-selections-group > div.marketBox_body.is-spacious.ng-star-inserted';
             childrenLenght = await this.getChildrenLenght(page, listChoiceSelectorParent);
         }
-        for (let index = 0; index < childrenLenght; index++) {
+        if(childrenLenght === 0) {
+            listChoiceSelectorParent = selector + ' > sports-markets-single-market-selections-group > div';
+            childrenLenght = await this.getChildrenLenght(page, listChoiceSelectorParent);
+        }
+        for (let index = 1; index <= childrenLenght; index++) {
             const selectorTmp = listChoiceSelectorParent + ' > div:nth-child(' + index + ')';
             const choiceNameTmp = (await this.getTextFromSelector(page, selectorTmp + ' > p')).trim();
-            if (choiceNameTmp.toLowerCase() === this.replaceMathBetName(choiceName).toLowerCase()) {
+            const realChoiceNameWithMatchNames = (await this.replaceMathBetName(page, choiceName)).toLowerCase();
+            if (choiceNameTmp.toLowerCase() === realChoiceNameWithMatchNames) {
                 return selectorTmp;
             }
         }
@@ -681,6 +625,16 @@ class App {
     }
 
     async getChildrenLenght(page, selector) {
+        await this.scrollToSelector(page, selector);
+        return await page.evaluate((selector) => {
+            if (document.querySelector(selector) === null) {
+                return 0;
+            }
+            return (Array.from(document.querySelector(selector).children).length);
+        }, selector);
+    }
+
+    async scrollToSelector(page, selector) {
         if (await this.selectorVisible(page, selector)) {
             await page.$eval(selector,
                 e => {
@@ -688,12 +642,6 @@ class App {
                 });
             await this.timeout(300);
         }
-        return await page.evaluate((selector) => {
-            if (document.querySelector(selector) === null) {
-                return 0;
-            }
-            return (Array.from(document.querySelector(selector).children).length);
-        }, selector);
     }
 
     async deleteInputValue(page, selector) {
