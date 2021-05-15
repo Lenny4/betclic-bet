@@ -41,6 +41,8 @@ class App {
                 maxOdd: match.maxOdd,
                 amountToWin: match.amountToWin,
                 betActionSerieId: match.betActionSerieId,
+                eventId: match.match.event.idBetclic,
+                sportId: match.match.sport.idBetclic,
                 time: now,
                 try: 0,
             };
@@ -101,7 +103,7 @@ class App {
         this.addLog('is betting on ', bet);
         let page = await this.browser.newPage();
         this.addLog('start try, page created for bet');
-        const url = 'https://www.betclic.fr/' + '-m' + bet.matchId;
+        const url = 'https://www.betclic.fr/sport-s' + bet.sportId + '/event-c' + bet.eventId + '/match-m' + bet.matchId;
         this.addLog('page going to ' + url);
         await page.goto(url, {
             waitUntil: ['load', 'networkidle0', 'domcontentloaded', 'networkidle2'],
