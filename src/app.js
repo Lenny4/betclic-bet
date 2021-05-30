@@ -15,7 +15,7 @@ class App {
         this.profileButton = 'body > app-desktop > bc-gb-header > header > div > a.header_account.prebootFreeze > span';
         this.loginForm = 'login-form';
         this.listBetSelector = 'div.verticalScroller_wrapper > div > div > sports-markets-single-market:nth-child';
-        this.listBetSelectorDoubleChanceFoot = 'div.verticalScroller_wrapper > div > div > sports-markets-grouped-markets';
+        this.listBetSelectorGrouped = 'div.verticalScroller_wrapper > div > div > sports-markets-grouped-markets:nth-child';
         // region slack
         this.slackCurrentLog = '';
         this.slackCurrentChannel = process.env.SLACK_CHANNEL_SUCCESS_DETAIL_ID;
@@ -131,147 +131,10 @@ class App {
         if (page.url().includes(bet.matchId)) {
             await this.clearPanier(page);
             await this.timeout(2000);
-            let buttonSelector = null;
 
-            // ------------------- FOOT
+            let buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
 
-            // Résultat du match Foot -> %1% ou nul ou %2%
-            if (bet.betCode === 'Ftb_Mr3') {
-                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
-            }
-            // But pour les 2 équipes -> Oui ou Non
-            if (bet.betCode === 'Ftb_Bts') {
-                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
-            }
-            // Nombre total de but
-            if (bet.betCode === 'Ftb_10') {
-                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
-            }
-            // Double chance
-            if (bet.betCode === 'Ftb_Dbc') {
-                buttonSelector = await this.getDoubleChanceSelectorToBet(page, bet.betName, bet.choiceName);
-            }
-            // Résultat du match (Remboursé si match nul)
-            if (bet.betCode === 'Ftb_5') {
-                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
-            }
-            // Ecart de buts
-            if (bet.betCode === 'Ftb_23') {
-                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
-            }
-
-            // ------------------- TENNIS
-
-            // Vainqueur du match Tennis -> %1% ou %2%
-            if (bet.betCode === 'Ten_Mr2') {
-                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
-            }
-            // Score final (Set) Tennis
-            if (bet.betCode === 'Ten_Set') {
-                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
-            }
-            // Score exact du 1er set Tennis
-            if (bet.betCode === 'Ten_Cs1') {
-                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
-            }
-            // Nombre total de jeux
-            if (bet.betCode === 'Ten_Tgm') {
-                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
-            }
-
-            // ------------------- BASEBALL
-
-            // Baseball nombre total de run
-            if (bet.betCode === 'Bsb_Trn') {
-                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
-            }
-            // Vainqueur du match
-            if (bet.betCode === 'Bsb_Mwi') {
-                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
-            }
-
-            // ------------------- BASKETBALL
-
-            // Vainqueur du match (Basket)
-            if (bet.betCode === 'Bkb_Mr6') {
-                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
-            }
-            // Résultat du match (Basket)
-            if (bet.betCode === 'Bkb_Mrs') {
-                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
-            }
-            // Nombre total de points (Bkb_Tpt)
-            if (bet.betCode === 'Bkb_Tpt') {
-                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
-            }
-
-            // ------------------- VOLLEY
-
-            // Vainqueur du match (Volley)
-            if (bet.betCode === 'Vlb_Mr2') {
-                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
-            }
-            // Vainqueur du match (Volley)
-            if (bet.betCode === 'Vlb_Tpt') {
-                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
-            }
-
-            // ------------------- SNOOKER
-
-            // Vainqueur du match (Snooker)
-            if (bet.betCode === 'Snk_Mr2') {
-                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
-            }
-
-            // ------------------- HOCKEY
-
-            // Résultat (Hockey)
-            if (bet.betCode === 'Ihk_Mrs') {
-                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
-            }
-            // Nombre total de but
-            if (bet.betCode === 'Ihk_TglM') {
-                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
-            }
-            // Vainqueur du match
-            if (bet.betCode === 'Ihk_Mnl') {
-                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
-            }
-            // Double chance
-            if (bet.betCode === 'Ihk_Dbc') {
-                buttonSelector = await this.getDoubleChanceSelectorToBet(page, bet.betName, bet.choiceName);
-            }
-            // Ecart de buts
-            if (bet.betCode === 'Ihk_Han') {
-                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
-            }
-
-            // ------------------- RUGBY
-
-            // Résultat (Rugby)
-            if (bet.betCode === 'Rgb_Mr3') {
-                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
-            }
-            // Nombre de points (Rugby)
-            if (bet.betCode === 'Rgb_Tpt') {
-                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
-            }
-
-            // ------------------- HAND-BALL
-
-            // Résultat (Hand-ball)
-            if (bet.betCode === 'Hdb_Mr2') {
-                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
-            }
-
-            // Nombre total de buts (Hand-ball)
-            if (bet.betCode === 'Hdb_Tgt') {
-                buttonSelector = await this.getSelectorToBet(page, bet.betName, bet.choiceName);
-            }
-
-            // -------------------
-
-            if (buttonSelector == null) {
+            if (buttonSelector == null || !await this.selectorVisible(page, buttonSelector)) {
                 const errorMessage = "Le paris n'a pas été trouvé";
                 this.addLog(errorMessage);
                 this.sendBetToServer(bet.betActionSerieId, 0, 0, true);
@@ -358,7 +221,7 @@ class App {
         await this.timeout(1000);
         if (this.slackCurrentChannel === process.env.SLACK_CHANNEL_SUCCESS_DETAIL_ID) {
             let message = this.currentMatchName;
-            if(this.slackMessageDisplay !== '') {
+            if (this.slackMessageDisplay !== '') {
                 message += this.slackMessageDisplay;
             }
             await SlackService.sendMessage(message, process.env.SLACK_CHANNEL_SUCCESS_ID);
@@ -380,8 +243,11 @@ class App {
             this.slackCurrentChannel = process.env.SLACK_CHANNEL_ERROR_ID;
         } else {
             buttonSelector = this.listBetSelector + '(' + indexBet + ') > div';
+            if (!await this.selectorVisible(page, buttonSelector)) {
+                buttonSelector = this.listBetSelectorGrouped + '(' + indexBet + ') > div'
+            }
             let showMorebuttonSelector = buttonSelector + ' > sports-markets-single-market-selections-group > div.seeMoreButton.prebootFreeze.ng-star-inserted';
-            if (await page.$(showMorebuttonSelector) !== null) {
+            if (await this.selectorVisible(page, showMorebuttonSelector)) {
                 await this.selectorClick(page, showMorebuttonSelector);
             }
             const selectorChoice = await this.getIndexOfChoice(page, buttonSelector, choiceName);
@@ -391,28 +257,8 @@ class App {
             } else {
                 buttonSelector = selectorChoice + ' > sports-selections-selection > div > span';
             }
-        }
-        return buttonSelector;
-    }
-
-    async getDoubleChanceSelectorToBet(page, betName, choiceName) {
-        let selectorTmp = this.listBetSelectorDoubleChanceFoot + ' > div > div.marketBox_head > h2';
-        const betNameTmp = (await this.getTextFromSelector(page, selectorTmp)).trim();
-        let buttonSelector;
-        if (betName.toLowerCase().trim() !== betNameTmp.toLowerCase()) {
-            this.addLog('Error : no bet.betName defined for ' + betName);
-            this.slackCurrentChannel = process.env.SLACK_CHANNEL_ERROR_ID;
-        } else {
-            buttonSelector = this.listBetSelectorDoubleChanceFoot + ' > div > div.marketBox_body.ng-star-inserted >';
-            if (choiceName.toLowerCase() === '%1% ou Nul'.toLowerCase()) {
-                buttonSelector += 'div:nth-child(2) > div.marketBox_list > div:nth-child(1) > sports-selections-selection';
-            } else if (choiceName.toLowerCase() === 'Nul ou %2%'.toLowerCase()) {
-                buttonSelector += 'div:nth-child(4) > div.marketBox_list > div:nth-child(1) > sports-selections-selection';
-            } else if (choiceName.toLowerCase() === '%1% ou %2%'.toLowerCase()) {
-                buttonSelector += 'div:nth-child(3) > div.marketBox_list > div:nth-child(1) > sports-selections-selection';
-            } else {
-                this.addLog('Error : no bet.choiceName defined for ' + choiceName + ' and ' + betName);
-                this.slackCurrentChannel = process.env.SLACK_CHANNEL_ERROR_ID;
+            if (!await this.selectorVisible(page, buttonSelector)) {
+                buttonSelector = selectorChoice + ' > div.marketBox_list > div:nth-child(1) > sports-selections-selection'
             }
         }
         return buttonSelector;
@@ -431,18 +277,29 @@ class App {
                 return index;
             }
         }
+        for (let index = 1; index < childrenLenght; index++) {
+            const selectorTmp = this.listBetSelectorGrouped + '(' + index + ') > div >  div.marketBox_head > h2';
+            const betNameTmp = (await this.getTextFromSelector(page, selectorTmp)).trim();
+            if (betName.toLowerCase().trim() === betNameTmp.toLowerCase()) {
+                return index;
+            }
+        }
         return null;
     }
 
     async getIndexOfChoice(page, selector, choiceName) {
         let listChoiceSelectorParent = selector + ' > sports-markets-single-market-selections-group > div.marketBox_body.is-2col.ng-star-inserted';
         let childrenLenght = await this.getChildrenLenght(page, listChoiceSelectorParent);
-        if(childrenLenght === 0) {
+        if (childrenLenght === 0) {
             listChoiceSelectorParent = selector + ' > sports-markets-single-market-selections-group > div.marketBox_body.is-spacious.ng-star-inserted';
             childrenLenght = await this.getChildrenLenght(page, listChoiceSelectorParent);
         }
-        if(childrenLenght === 0) {
+        if (childrenLenght === 0) {
             listChoiceSelectorParent = selector + ' > sports-markets-single-market-selections-group > div';
+            childrenLenght = await this.getChildrenLenght(page, listChoiceSelectorParent);
+        }
+        if (childrenLenght === 0) {
+            listChoiceSelectorParent = selector + ' > div.marketBox_body.ng-star-inserted';
             childrenLenght = await this.getChildrenLenght(page, listChoiceSelectorParent);
         }
         for (let index = 1; index <= childrenLenght; index++) {
@@ -460,7 +317,7 @@ class App {
         const pageTitle = await page.title();
         const pageTitleSplitted = pageTitle.slice('Parier sur '.length).split(' | ');
         const matchNameArray = pageTitleSplitted[0].split(" - ");
-        if(matchNameArray.length !== 2) {
+        if (matchNameArray.length !== 2) {
             return choiceName;
         }
         choiceName = choiceName.replace("%1%", matchNameArray[0]);
