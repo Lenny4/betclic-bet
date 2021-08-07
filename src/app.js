@@ -269,6 +269,8 @@ class App {
         // plusieurs appels necessaire pour load toute la page
         await this.scrollToSelector(page, listBetSelectorParent);
         await this.scrollToSelector(page, listBetSelectorParent);
+        await this.scrollToSelector(page, listBetSelectorParent);
+        await this.scrollToSelector(page, listBetSelectorParent);
         const childrenLenght = await this.getChildrenLenght(page, listBetSelectorParent);
         for (let index = 1; index < childrenLenght; index++) {
             const selectorTmp = this.listBetSelector + '(' + index + ') > div >  div.marketBox_head > h2';
