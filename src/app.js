@@ -116,7 +116,7 @@ class App {
         page = await this.login(page, url);
         this.addLog('start betting');
         let maxAttemptWinning = 0;
-        while (page.url().includes(bet.matchId)) {
+        while (!page.url().includes(bet.matchId)) {
             await page.goto(url, {
                 waitUntil: ['load', 'networkidle0', 'domcontentloaded', 'networkidle2'],
                 // Remove the timeout
@@ -127,6 +127,7 @@ class App {
             if (maxAttemptWinning >= 5) {
                 break;
             }
+            await this.timeout(3000);
         }
         if (page.url().includes(bet.matchId)) {
             await this.clearPanier(page);
@@ -447,7 +448,7 @@ class App {
             });
             await page.addScriptTag({path: 'lib/jquery-3.4.1.min.js'});
         }
-        await this.timeout(3000);
+        await this.timeout(2000);
         return page;
     }
 
