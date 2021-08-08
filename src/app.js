@@ -268,10 +268,7 @@ class App {
     async getIndexOfBet(page, betName) {
         const listBetSelectorParent = 'div.verticalScroller_wrapper > div > div';
         // plusieurs appels necessaire pour load toute la page
-        await this.scrollToSelector(page, listBetSelectorParent);
-        await this.scrollToSelector(page, listBetSelectorParent);
-        await this.scrollToSelector(page, listBetSelectorParent);
-        await this.scrollToSelector(page, listBetSelectorParent);
+        await this.loadAllPage(page);
         await this.scrollToSelector(page, listBetSelectorParent);
         const childrenLenght = await this.getChildrenLenght(page, listBetSelectorParent);
         for (let index = 1; index < childrenLenght; index++) {
@@ -505,6 +502,25 @@ class App {
                 });
             await this.timeout(500);
         }
+    }
+
+    async loadAllPage(page) {
+        console.log("Loading all the page");
+        await page.evaluate(async () => {
+            await new Promise((resolve) => {
+                let totalHeight = 0;
+                const distance = 500;
+                const timer = setInterval(() => {
+                    const scrollHeight = document.body.scrollHeight;
+                    window.scrollBy(0, distance);
+                    totalHeight += distance;
+                    if (totalHeight >= scrollHeight) {
+                        clearInterval(timer);
+                        resolve();
+                    }
+                }, 100);
+            });
+        });
     }
 
     async deleteInputValue(page, selector) {
