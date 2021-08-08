@@ -272,6 +272,7 @@ class App {
         await this.scrollToSelector(page, listBetSelectorParent);
         await this.scrollToSelector(page, listBetSelectorParent);
         await this.scrollToSelector(page, listBetSelectorParent);
+        await this.scrollToSelector(page, listBetSelectorParent);
         const childrenLenght = await this.getChildrenLenght(page, listBetSelectorParent);
         for (let index = 1; index < childrenLenght; index++) {
             const selectorTmp = this.listBetSelector + '(' + index + ') > div >  div.marketBox_head > h2';
@@ -502,7 +503,7 @@ class App {
                 e => {
                     e.scrollIntoView({behavior: 'smooth', block: 'end', inline: 'end'})
                 });
-            await this.timeout(300);
+            await this.timeout(500);
         }
     }
 
