@@ -26,6 +26,8 @@ class App {
     }
 
     async addBets(matchs) {
+        this.bets = [];
+        this.isBetting = false;
         const now = Math.round(new Date().getTime() / 1000);
         for (let match of matchs) {
             const doublon = this.doublons.find(x =>
@@ -56,6 +58,7 @@ class App {
         }
         this.doublons = this.doublons.filter(x => x.time >= (now - (3600 * 24)));
         if (!this.isBetting) {
+            this.addLog('start betting for this session');
             this.bet();
         }
     }
@@ -89,6 +92,7 @@ class App {
         this.isBetting = true;
         if (this.bets.length === 0) {
             this.isBetting = false;
+            this.addLog('end betting for this session');
             return;
         }
         const bet = this.bets[0];
@@ -197,7 +201,15 @@ class App {
                 this.sendBetToServer(bet.betActionSerieId, amountToBet, oddValue, false);
             } else {
                 await this.logError('button close confirmation bet not found');
-                this.sendBetToServer(bet.betActionSerieId, amountToBet, oddValue, true);
+                const buttonOddChange = '#ok';
+                if (await page.$(buttonOddChange) !== null) {
+                    this.addLog('click on button ok odd changes ...');
+                    await this.selectorClick(page, buttonOddChange);
+                    this.sendBetToServer(bet.betActionSerieId, amountToBet, oddValue, false);
+                } else {
+                    this.logError('button odd changes no found');
+                    this.sendBetToServer(bet.betActionSerieId, amountToBet, oddValue, true);
+                }
             }
         } else {
             this.sendBetToServer(bet.betActionSerieId, 0, 0, true);
@@ -213,7 +225,6 @@ class App {
         await this.clearPanier(page);
         await this.timeout(2000);
 
-        await page.goto('about:blank');
         await page.close();
         await this.stopAllRecord();
         // region slack
