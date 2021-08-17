@@ -1,7 +1,7 @@
 const {exec} = require('child_process');
 const slugify = require('slugify');
 const fs = require('fs');
-const {readdirSync} = require('fs')
+const {readdirSync} = require('fs');
 const SlackService = require('./Service/SlackService');
 
 class App {
@@ -57,7 +57,7 @@ class App {
             }
         }
         this.doublons = this.doublons.filter(x => x.time >= (now - (3600 * 24)));
-        if (!this.isBetting) {
+        if (!this.isBetting && this.bets.length > 0) {
             this.addLog('start betting for this session');
             this.bet();
         }
