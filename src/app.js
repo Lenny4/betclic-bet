@@ -414,7 +414,7 @@ class App {
         await page.waitForSelector(this.loginForm, {visible: true});
         await this.selectorTypeValue(page, '#loginPage_username > input', process.env.LOGIN_USERNAME);
         await this.selectorTypeValue(page, '#loginpage_password > input', process.env.LOGIN_PASSWORD);
-        // await this.selectorTypeValue(page, '#date', process.env.LOGIN_DAY + process.env.LOGIN_MONTH + process.env.LOGIN_YEAR);
+        await this.selectorTypeValue(page, '#date', process.env.LOGIN_DAY + process.env.LOGIN_MONTH + process.env.LOGIN_YEAR);
         await this.deletePopUp(page);
         await this.selectorClick(page, 'login-page > div > div > div.container_content > div.box > div.box_content > login-form > form > div.buttonWrapper > button');
         this.addLog('logging done !');
