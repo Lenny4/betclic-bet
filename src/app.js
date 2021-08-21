@@ -16,6 +16,7 @@ class App {
         this.loginForm = 'login-form';
         this.listBetSelector = 'div.verticalScroller_wrapper > div > div > sports-markets-single-market:nth-child';
         this.listBetSelectorGrouped = 'div.verticalScroller_wrapper > div > div > sports-markets-grouped-markets:nth-child';
+
         // region slack
         this.slackCurrentLog = '';
         this.slackCurrentChannel = process.env.SLACK_CHANNEL_SUCCESS_DETAIL_ID;
